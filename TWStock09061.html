@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>台股交易金額計算器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+```
+    body {
+        font-family: 'Microsoft JhengHei', 'PingFang TC', 'Noto Sans TC', 'Arial', sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #e74c3c 100%);
+        min-height: 100vh;
+        padding: 20px;
+    }
+
+    .container {
+        max-width: 700px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .header {
+        background: linear-gradient(135deg, #2c3e50, #3498db, #e74c3c);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .header h1 {
+        font-size: 2em;
+        margin-bottom: 10px;
+    }
+
+    .header p {
+        opacity: 0.9;
+        font-size: 1.1em;
+    }
+
+    .form-container {
+        padding: 30px;
+    }
+
+    .info-box {
+        background: #e8f4fd;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        border-left: 4px solid #3498db;
+    }
+
+    .info-box h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-family: inherit;
+    }
+
+    .info-box .tick-info {
+        font-size: 0.9em;
+        color: #555;
+        font-family: inherit;
+    }
+
+    .form-group {
+        margin-bottom: 25px;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: bold;
+        color: #333;
+        font-size: 1.1em;
+        font-family: inherit;
+    }
+
+    .required {
+        color: #e74c3c;
+        font-family: inherit;
+    }
+
+    select, input {
+        width: 100%;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        font-size: 1em;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+
+    input[type="number"] {
+        -webkit-appearance: none;
+        -moz-appearance: textfield;
+        appearance: none;
+    }
+
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    select:focus, input:focus {
+        outline: none;
+        border-color: #3498db;
+        box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+
+    /* iOS Safari 特殊處理 */
+    @supports (-webkit-touch-callout: none) {
+        select, input {
+            font-size: 16px; /* 防止 iOS 縮放 */
+        }
+    }
+
+    .price-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .price-input-container {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .stock-type-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+
+    .radio-group {
+        display: flex;
+        align-items: center;
+        padding: 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+    }
+
+    .radio-group:hover {
+        border-color: #3498db;
+        background-color: #f8f9fa;
+    }
+
+    .radio-group input[type="radio"] {
+        width: auto;
+        margin-right: 10px;
+        transform: scale(1.2);
+    }
+
+    .radio-group.active {
+        border-color: #3498db;
+        background-color: #e3f2fd;
+    }
+
+    .radio-group label {
+        margin: 0;
+        cursor: pointer;
+        font-weight: normal;
+    }
+
+    .calculate-btn {
+        width: 100%;
+        padding: 18px;
+        background: linear-gradient(135deg, #3498db 0%, #e74c3c 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-size: 1.2em;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+        touch-action: manipulation;
+    }
+
+    .calculate-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        background: linear-gradient(135deg, #2980b9 0%, #c0392b 100%);
+    }
+
+    .calculate-btn:active {
+        transform: translateY(0);
+    }
+
+    .results {
+        display: none;
+        background: #f8f9fa;
+        border-radius: 15px;
+        padding: 25px;
+        margin-top: 20px;
+    }
+
+    .result-section {
+        margin-bottom: 20px;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .result-section h3 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 1.3em;
+        font-family: inherit;
+    }
+
+    .result-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        padding: 8px 0;
+        border-bottom: 1px solid #eee;
+        font-family: inherit;
+    }
+
+    .result-item:last-child {
+        border-bottom: none;
+        font-weight: bold;
+        font-size: 1.1em;
+    }
+
+    .buy-section {
+        border-left: 4px solid #27ae60;
+    }
+
+    .buy-section .result-item:last-child {
+        color: #27ae60;
+    }
+
+    .sell-section {
+        border-left: 4px solid #e74c3c;
+    }
+
+    .sell-section .result-item:last-child {
+        color: #e74c3c;
+    }
+
+    .profit-section {
+        border-left: 4px solid #f39c12;
+    }
+
+    .profit-positive {
+        color: #27ae60;
+        font-weight: bold;
+    }
+
+    .profit-negative {
+        color: #e74c3c;
+        font-weight: bold;
+    }
+
+    .profit-zero {
+        color: #7f8c8d;
+        font-weight: bold;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            margin: 10px;
+            border-radius: 15px;
+        }
+
+        .header {
+            padding: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.6em;
+        }
+
+        .form-container {
+            padding: 20px;
+        }
+
+        .price-group,
+        .stock-type-group {
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .calculate-btn {
+            font-size: 1.1em;
+            padding: 16px;
+        }
+
+        .result-item {
+            font-size: 0.95em;
+        }
+    }
+
+    @media (max-width: 480px) {
+        body {
+            padding: 5px;
+        }
+
+        .header h1 {
+            font-size: 1.4em;
+        }
+
+        .form-container {
+            padding: 15px;
+        }
+
+        .info-box {
+            padding: 12px;
+        }
+
+        .info-box table {
+            font-size: 0.85em;
+        }
+
+        .info-box th,
+        .info-box td {
+            padding: 6px !important;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .result-section {
+            padding: 15px;
+        }
+
+        .result-item {
+            font-size: 0.9em;
+            padding: 6px 0;
+        }
+    }
+
+    /* 超小螢幕優化 */
+    @media (max-width: 360px) {
+        .header h1 {
+            font-size: 1.2em;
+        }
+
+        .form-container {
+            padding: 10px;
+        }
+
+        .info-box table {
+            font-size: 0.8em;
+        }
+
+        .calculate-btn {
+            font-size: 1em;
+            padding: 14px;
+        }
+    }
+</style>
+```
+
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📈 台股交易計算器</h1>
+            <p>精準計算您的股票交易成本與損益</p>
+        </div>
+
+```
+    <div class="form-container">
+        <!-- 價格跳動單位說明表格 -->
+        <div class="info-box">
+            <h4>📊 台股價格跳動單位參考表</h4>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background-color: #f8f9fa;">
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">股價區間</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: center;">跳動單位</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left;">範例</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">10元以下</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">0.01元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">9.98, 9.99, 10.00</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">10元~未滿50元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">0.05元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">10.00, 10.05, 10.10...49.95</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">50元~未滿100元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">0.1元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">50.0, 50.1, 50.2...99.9, 100.0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">100元~未滿500元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">0.5元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">100.0, 100.5, 101.0...499.5, 500.0</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">500元~未滿1000元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">1元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">500, 501, 502...999, 1000</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 8px;">1000元以上</td>
+                        <td style="border: 1px solid #ddd; padding: 8px; text-align: center;">5元</td>
+                        <td style="border: 1px solid #ddd; padding: 8px;">1000, 1005, 1010, 1015...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <form id="stockCalculator">
+            <!-- 券商選擇 -->
+            <div class="form-group">
+                <label for="broker">券商選擇</label>
+                <select id="broker" required>
+                    <option value="">請選擇券商</option>
+                    <option value="fubon">富邦證券</option>
+                    <option value="shinko">新光證券</option>
+                    <option value="president">統一證券</option>
+                    <option value="sinopac">永豐證券</option>
+                    <option value="taishin">台新證券</option>
+                    <option value="pocketsec">口袋證券</option>
+                    <option value="landbank">土銀證券</option>
+                    <option value="bot">臺銀證券</option>
+                    <option value="megasec">兆豐證券</option>
+                    <option value="tcbsec">合庫證券</option>
+                    <option value="changhuasec">彰銀證券</option>
+                    <option value="ctbc">中國信託證券</option>
+                    <option value="firstsec">第一金證券</option>
+                    <option value="sunnybank">陽信證券</option>
+                    <option value="esun">玉山證券</option>
+                    <option value="kgi">凱基證券</option>
+                    <option value="yuanta">元大證券</option>
+                    <option value="cathaysec">國泰證券</option>
+                    <option value="capital">群益證券</option>
+                    <option value="masterlink">元富證券</option>
+                    <option value="entrust">華南永昌證券</option>
+                </select>
+            </div>
+
+            <!-- 股票價格 -->
+            <div class="form-group">
+                <label>股票價格</label>
+                <div class="price-group">
+                    <div class="price-input-container">
+                        <label for="buyPrice" style="font-size: 0.9em; margin-bottom: 5px;">
+                            買進價格 (元)
+                        </label>
+                        <input type="number" id="buyPrice" step="0.01" min="0" placeholder="買進價格" required>
+                    </div>
+                    <div class="price-input-container">
+                        <label for="sellPrice" style="font-size: 0.9em; margin-bottom: 5px;">
+                            賣出價格 (元)
+                        </label>
+                        <input type="number" id="sellPrice" step="0.01" min="0" placeholder="賣出價格" required>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 交易類型 -->
+            <div class="form-group">
+                <label>交易類型 <span class="required">*必選</span></label>
+                <div class="stock-type-group">
+                    <div class="radio-group" onclick="selectStockType('lot')">
+                        <input type="radio" id="lot" name="stockType" value="lot" required>
+                        <label for="lot">整張交易</label>
+                    </div>
+                    <div class="radio-group" onclick="selectStockType('odd')">
+                        <input type="radio" id="odd" name="stockType" value="odd" required>
+                        <label for="odd">零股交易</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 數量 -->
+            <div class="form-group">
+                <label for="quantity" id="quantityLabel">數量 <span class="required">*必選</span></label>
+                <input type="number" id="quantity" min="1" placeholder="請輸入數量 (預設為1)" value="1">
+            </div>
+
+            <button type="submit" class="calculate-btn">💰 計算交易成本與損益</button>
+        </form>
+
+        <!-- 計算結果 -->
+        <div id="results" class="results">
+            <div class="result-section buy-section">
+                <h3>🟢 買入成本</h3>
+                <div class="result-item">
+                    <span>股票金額：</span>
+                    <span id="buyStockAmount"></span>
+                </div>
+                <div class="result-item">
+                    <span>手續費 (0.1425%) <span id="buyBrokerDiscount"></span>：</span>
+                    <span id="buyCommissionOriginal"></span>
+                </div>
+                <div class="result-item">
+                    <span>總買入成本 (試算)：</span>
+                    <span id="totalBuyCostOriginal"></span>
+                </div>
+            </div>
+
+            <div class="result-section sell-section">
+                <h3>🔴 賣出收益</h3>
+                <div class="result-item">
+                    <span>股票金額：</span>
+                    <span id="sellStockAmount"></span>
+                </div>
+                <div class="result-item">
+                    <span>手續費 (0.1425%) <span id="sellBrokerDiscount"></span>：</span>
+                    <span id="sellCommissionOriginal"></span>
+                </div>
+                <div class="result-item">
+                    <span>證券交易稅 (0.3%)：</span>
+                    <span id="tax"></span>
+                </div>
+                <div class="result-item">
+                    <span>淨賣出收益 (試算)：</span>
+                    <span id="netSellProceedsOriginal"></span>
+                </div>
+            </div>
+
+            <div class="result-section profit-section">
+                <h3>📊 損益分析</h3>
+                <div class="result-item">
+                    <span>總交易費用：</span>
+                    <span id="totalCosts"></span>
+                </div>
+                <div class="result-item">
+                    <span>手續費折扣優惠：</span>
+                    <span id="discountAmount" style="color: #27ae60;"></span>
+                </div>
+                <div class="result-item">
+                    <span>試算後損益：</span>
+                    <span id="profitAmount"></span>
+                </div>
+                <div class="result-item">
+                    <span>損益率：</span>
+                    <span id="profitRate"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 等待DOM載入完成
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeEventListeners();
+    });
+
+    // 初始化事件監聽器
+    function initializeEventListeners() {
+        // 表單提交
+        document.getElementById('stockCalculator').addEventListener('submit', function(e) {
+            e.preventDefault();
+            calculateTradingCost();
+        });
+
+        // 交易類型選擇
+        document.querySelectorAll('input[name="stockType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                selectStockType(this.value);
+            });
+        });
+    }
+
+    // 獲取價格對應的跳動單位
+    function getTickSize(price) {
+        if (price < 10) return 0.01;
+        if (price < 50) return 0.05;
+        if (price < 100) return 0.1;
+        if (price < 500) return 0.5;
+        if (price < 1000) return 1;
+        return 5;
+    }
+
+    // 選擇交易類型 - 增加跨平台兼容性
+    function selectStockType(type) {
+        // 移除所有 active class
+        document.querySelectorAll('.radio-group').forEach(group => {
+            group.classList.remove('active');
+        });
+        
+        // 選擇對應的 radio button
+        const selectedRadio = document.getElementById(type);
+        selectedRadio.checked = true;
+        selectedRadio.parentElement.classList.add('active');
+        
+        // 更新數量標籤
+        const quantityLabel = document.getElementById('quantityLabel');
+        if (type === 'lot') {
+            quantityLabel.innerHTML = '張數 <span class="required">*必選</span>';
+            document.getElementById('quantity').placeholder = '請輸入張數 (預設為1)';
+        } else {
+            quantityLabel.innerHTML = '股數 <span class="required">*必選</span>';
+            document.getElementById('quantity').placeholder = '請輸入股數 (預設為1)';
+        }
+    }
+
+    // 跨平台數字格式化
+    function formatNumber(num) {
+        if (typeof Intl !== 'undefined' && Intl.NumberFormat) {
+            try {
+                return new Intl.NumberFormat('zh-TW').format(num);
+            } catch (e) {
+                // 降級處理
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            }
+        } else {
+            // 手動實現千分位格式化
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+    }
+
+    // 計算交易成本
+    function calculateTradingCost() {
+        const broker = document.getElementById('broker').value;
+        const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+        const stockTypeElement = document.querySelector('input[name="stockType"]:checked');
+        let quantity = document.getElementById('quantity').value;
+
+        // 檢查必填欄位
+        if (!broker) {
+            alert('請選擇券商！');
+            return;
+        }
+        
+        if (!buyPrice || buyPrice <= 0) {
+            alert('請輸入有效的買進價格！');
+            return;
+        }
+        
+        if (!sellPrice || sellPrice <= 0) {
+            alert('請輸入有效的賣出價格！');
+            return;
+        }
+        
+        if (!stockTypeElement) {
+            alert('請選擇交易類型（整張或零股）！');
+            return;
+        }
+
+        // 如果數量空白，預設為1
+        if (!quantity || quantity === '') {
+            quantity = 1;
+            document.getElementById('quantity').value = 1;
+        } else {
+            quantity = parseInt(quantity);
+            if (quantity <= 0) {
+                alert('請輸入有效的數量！');
+                return;
+            }
+        }
+
+        const stockType = stockTypeElement.value;
+
+        // 計算股票總價
+        let buyStockAmount, sellStockAmount;
+        if (stockType === 'lot') {
+            buyStockAmount = buyPrice * quantity * 1000; // 一張 = 1000股
+            sellStockAmount = sellPrice * quantity * 1000;
+        } else {
+            buyStockAmount = buyPrice * quantity;
+            sellStockAmount = sellPrice * quantity;
+        }
+
+        // 券商手續費折扣計算
+        function getBrokerInfo(broker, stockAmount) {
+            switch (broker) {
+                case 'fubon':
+                    // 富邦證券：股票金額100萬為分界
+                    return {
+                        discountRate: stockAmount >= 1000000 ? 0.6 : 0.18,
+                        name: '富邦證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'shinko':
+                    // 新光證券：1折
+                    return {
+                        discountRate: 0.1,
+                        name: '新光證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'president':
+                    // 統一證券：1.68折，最低手續費統一為1元
+                    return {
+                        discountRate: 0.168,
+                        name: '統一證券',
+                        minFeeRegular: 1,
+                        minFeeOdd: 1
+                    };
+                case 'sinopac':
+                    // 永豐證券：2折，零股最低1元
+                    return {
+                        discountRate: 0.2,
+                        name: '永豐證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'taishin':
+                    // 台新證券：2折
+                    return {
+                        discountRate: 0.2,
+                        name: '台新證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'pocketsec':
+                    // 口袋證券：2.8折
+                    return {
+                        discountRate: 0.28,
+                        name: '口袋證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'landbank':
+                    // 土銀證券：3折
+                    return {
+                        discountRate: 0.3,
+                        name: '土銀證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'bot':
+                    // 臺銀證券：3.5折
+                    return {
+                        discountRate: 0.35,
+                        name: '臺銀證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'megasec':
+                    // 兆豐證券：5折
+                    return {
+                        discountRate: 0.5,
+                        name: '兆豐證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'tcbsec':
+                    // 合庫證券：5折
+                    return {
+                        discountRate: 0.5,
+                        name: '合庫證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'changhuasec':
+                    // 彰銀證券：5折
+                    return {
+                        discountRate: 0.5,
+                        name: '彰銀證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'ctbc':
+                    // 中國信託證券：6折
+                    return {
+                        discountRate: 0.6,
+                        name: '中國信託證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'firstsec':
+                    // 第一金證券：6折，零股最低2元
+                    return {
+                        discountRate: 0.6,
+                        name: '第一金證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 2
+                    };
+                case 'sunnybank':
+                    // 陽信證券：6折
+                    return {
+                        discountRate: 0.6,
+                        name: '陽信證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'esun':
+                    // 玉山證券：6折，零股最低1元
+                    return {
+                        discountRate: 0.6,
+                        name: '玉山證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'kgi':
+                    // 凱基證券：6折，零股最低1元
+                    return {
+                        discountRate: 0.6,
+                        name: '凱基證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'yuanta':
+                    // 元大證券：6折，零股最低1元
+                    return {
+                        discountRate: 0.6,
+                        name: '元大證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'cathaysec':
+                    // 國泰證券：2.8折，零股最低1元
+                    return {
+                        discountRate: 0.28,
+                        name: '國泰證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'capital':
+                    // 群益證券：6折，零股最低1元
+                    return {
+                        discountRate: 0.6,
+                        name: '群益證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'masterlink':
+                    // 元富證券：6.5折，零股最低1元
+                    return {
+                        discountRate: 0.65,
+                        name: '元富證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                case 'entrust':
+                    // 華南永昌證券：6.5折，零股最低1元
+                    return {
+                        discountRate: 0.65,
+                        name: '華南永昌證券',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+                default:
+                    return {
+                        discountRate: 1.0,
+                        name: '一般券商',
+                        minFeeRegular: 20,
+                        minFeeOdd: 1
+                    };
+            }
+        }
+
+        const buyBrokerInfo = getBrokerInfo(broker, buyStockAmount);
+        const sellBrokerInfo = getBrokerInfo(broker, sellStockAmount);
+
+        // 計算原始手續費（未折扣）
+        let buyCommissionOriginal = buyStockAmount * 0.001425;
+        let sellCommissionOriginal = sellStockAmount * 0.001425;
+
+        // 計算折扣後手續費
+        let buyCommission = buyCommissionOriginal * buyBrokerInfo.discountRate;
+        let sellCommission = sellCommissionOriginal * sellBrokerInfo.discountRate;
+
+        // 最低手續費處理（根據券商和交易類型）
+        if (stockType === 'lot') {
+            // 整張交易
+            if (buyCommissionOriginal < buyBrokerInfo.minFeeRegular) buyCommissionOriginal = buyBrokerInfo.minFeeRegular;
+            if (sellCommissionOriginal < sellBrokerInfo.minFeeRegular) sellCommissionOriginal = sellBrokerInfo.minFeeRegular;
+            if (buyCommission < buyBrokerInfo.minFeeRegular) buyCommission = buyBrokerInfo.minFeeRegular;
+            if (sellCommission < sellBrokerInfo.minFeeRegular) sellCommission = sellBrokerInfo.minFeeRegular;
+        } else {
+            // 零股交易
+            if (buyCommissionOriginal < buyBrokerInfo.minFeeOdd) buyCommissionOriginal = buyBrokerInfo.minFeeOdd;
+            if (sellCommissionOriginal < sellBrokerInfo.minFeeOdd) sellCommissionOriginal = sellBrokerInfo.minFeeOdd;
+            if (buyCommission < buyBrokerInfo.minFeeOdd) buyCommission = buyBrokerInfo.minFeeOdd;
+            if (sellCommission < sellBrokerInfo.minFeeOdd) sellCommission = sellBrokerInfo.minFeeOdd;
+        }
+
+        // 重新計算折扣金額（因為可能有最低手續費調整）
+        const buyDiscount = buyCommissionOriginal - buyCommission;
+        const sellDiscount = sellCommissionOriginal - sellCommission;
+        const totalDiscount = buyDiscount + sellDiscount;
+
+        // 證券交易稅（賣出金額 × 0.3%）
+        const tax = sellStockAmount * 0.003;
+
+        // 計算總成本（使用未折扣手續費）
+        const totalBuyCostOriginal = buyStockAmount + buyCommissionOriginal;
+        const netSellProceedsOriginal = sellStockAmount - sellCommissionOriginal - tax;
+
+        // 計算實際成本（使用折扣後手續費）
+        const totalBuyCost = buyStockAmount + buyCommission;
+        const netSellProceeds = sellStockAmount - sellCommission - tax;
+
+        // 計算損益（基於實際折扣後的費用）
+        const totalCosts = buyCommission + sellCommission + tax;
+        const profitAmount = netSellProceeds - totalBuyCost;
+        const profitRate = (profitAmount / totalBuyCost) * 100;
+
+        // 顯示結果
+        updateResults({
+            buyStockAmount,
+            buyCommissionOriginal,
+            totalBuyCostOriginal,
+            sellStockAmount,
+            sellCommissionOriginal,
+            tax,
+            netSellProceedsOriginal,
+            totalCosts,
+            totalDiscount,
+            profitAmount,
+            profitRate,
+            buyBrokerInfo,
+            sellBrokerInfo
+        });
+    }
+
+    // 更新結果顯示 - 使用跨平台數字格式化
+    function updateResults(data) {
+        document.getElementById('buyStockAmount').textContent = `NT$ ${formatNumber(data.buyStockAmount)}`;
+        document.getElementById('buyCommissionOriginal').textContent = `NT$ ${formatNumber(Math.round(data.buyCommissionOriginal))}`;
+        document.getElementById('totalBuyCostOriginal').textContent = `NT$ ${formatNumber(Math.round(data.totalBuyCostOriginal))}`;
+
+        document.getElementById('sellStockAmount').textContent = `NT$ ${formatNumber(data.sellStockAmount)}`;
+        document.getElementById('sellCommissionOriginal').textContent = `NT$ ${formatNumber(Math.round(data.sellCommissionOriginal))}`;
+        document.getElementById('tax').textContent = `NT$ ${formatNumber(Math.round(data.tax))}`;
+        document.getElementById('netSellProceedsOriginal').textContent = `NT$ ${formatNumber(Math.round(data.netSellProceedsOriginal))}`;
+
+        document.getElementById('totalCosts').textContent = `NT$ ${formatNumber(Math.round(data.totalCosts))}`;
+        document.getElementById('discountAmount').textContent = `-NT$ ${formatNumber(Math.round(data.totalDiscount))}`;
+        
+        // 顯示券商折扣資訊
+        function getDiscountText(brokerInfo) {
+            const rate = brokerInfo.discountRate;
+            if (rate === 0.1) return '(1折)';
+            if (rate === 0.168) return '(1.68折)';
+            if (rate === 0.18) return '(1.8折)';
+            if (rate === 0.2) return '(2折)';
+            if (rate === 0.28) return '(2.8折)';
+            if (rate === 0.3) return '(3折)';
+            if (rate === 0.35) return '(3.5折)';
+            if (rate === 0.5) return '(5折)';
+            if (rate === 0.6) return '(6折)';
+            if (rate === 0.65) return '(6.5折)';
+            if (rate === 1.0) return '';
+            return `(${(rate * 10).toFixed(1)}折)`;
+        }
+        
+        document.getElementById('buyBrokerDiscount').textContent = getDiscountText(data.buyBrokerInfo);
+        document.getElementById('sellBrokerDiscount').textContent = getDiscountText(data.sellBrokerInfo);
+        
+        const profitAmountElement = document.getElementById('profitAmount');
+        const profitRateElement = document.getElementById('profitRate');
+        
+        // 設定損益顏色和內容
+        let profitClass;
+        if (data.profitAmount > 0) {
+            profitClass = 'profit-positive';
+            profitAmountElement.textContent = `+NT$ ${formatNumber(Math.round(data.profitAmount))}`;
+            profitRateElement.textContent = `+${data.profitRate.toFixed(2)}%`;
+        } else if (data.profitAmount < 0) {
+            profitClass = 'profit-negative';
+            profitAmountElement.textContent = `-NT$ ${formatNumber(Math.round(Math.abs(data.profitAmount)))}`;
+            profitRateElement.textContent = `${data.profitRate.toFixed(2)}%`;
+        } else {
+            profitClass = 'profit-zero';
+            profitAmountElement.textContent = `NT$ 0`;
+            profitRateElement.textContent = `0.00%`;
+        }
+
+        profitAmountElement.className = profitClass;
+        profitRateElement.className = profitClass;
+
+        // 顯示結果區塊
+        document.getElementById('results').style.display = 'block';
+        
+        // 跨平台滾動到結果區域
+        try {
+            document.getElementById('results').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        } catch (e) {
+            // 降級處理：直接滾動
+            document.getElementById('results').scrollIntoView();
+        }
+    }
+</script>
+```
+
+</body>
+</html>
