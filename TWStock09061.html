@@ -710,11 +710,11 @@
                         <span id="buyStockAmount"></span>
                     </div>
                     <div class="result-item">
-                        <span>手續費 (0.1425%)<span id="buyBrokerDiscount"></span>：</span>
+                        <span>手續費 (0.1425%)：</span>
                         <span id="buyCommission"></span>
                     </div>
                     <div class="result-item">
-                        <span>總買入成本：</span>
+                        <span>總買入成本 (折扣後)：</span>
                         <span id="totalBuyCost"></span>
                     </div>
                 </div>
@@ -725,7 +725,7 @@
                         <span id="sellStockAmount"></span>
                     </div>
                     <div class="result-item">
-                        <span>手續費 (0.1425%)<span id="sellBrokerDiscount"></span>：</span>
+                        <span>手續費 (0.1425%)：</span>
                         <span id="sellCommission"></span>
                     </div>
                     <div class="result-item">
@@ -733,19 +733,27 @@
                         <span id="tax"></span>
                     </div>
                     <div class="result-item">
-                        <span>淨賣出收益：</span>
+                        <span>淨賣出收益 (折扣後)：</span>
                         <span id="netSellProceeds"></span>
                     </div>
                 </div>
                 <div class="result-section profit-section" id="profitSection" style="display: none;">
                     <h3>📊 損益分析</h3>
-                    <div class="result-item">
-                        <span>總交易費用 (折扣後)：</span>
-                        <span id="totalCosts"></span>
+                     <div class="result-item" id="buyDiscountRateRow" style="display: none;">
+                        <span>買入優惠折數：</span>
+                        <span id="buyDiscountRate" class="profit-positive"></span>
                     </div>
-                     <div class="result-item">
+                    <div class="result-item" id="sellDiscountRateRow" style="display: none;">
+                        <span>賣出優惠折數：</span>
+                        <span id="sellDiscountRate" class="profit-negative"></span>
+                    </div>
+                    <div class="result-item">
                         <span>手續費折扣優惠：</span>
                         <span id="discountAmount"></span>
+                    </div>
+                     <div class="result-item">
+                        <span>總交易費用 (折扣後)：</span>
+                        <span id="totalCosts"></span>
                     </div>
                     <div class="result-item">
                         <span>試算損益：</span>
@@ -834,7 +842,7 @@
                     case 'fubon': info = { ...info, discountRate: stockAmount >= 1000000 ? 0.6 : 0.18, name: '富邦' }; break;
                     case 'shinko': info = { ...info, discountRate: 0.1, name: '新光' }; break;
                     case 'president': info = { ...info, discountRate: 0.168, name: '統一', minFeeRegular: 1 }; break;
-                    case 'sinopac': info = { ...info, discountRate: 0.28, name: '永豐' }; break; 
+                    case 'sinopac': info = { ...info, discountRate: 0.28, name: '永豐金' }; break; 
                     case 'pocketsec': info = { ...info, discountRate: 0.28, name: '口袋' }; break; 
                     case 'kgi': info = { ...info, discountRate: 0.6, name: '凱基' }; break; 
                     case 'yuanta': info = { ...info, discountRate: 0.6, name: '元大' }; break; 
@@ -863,16 +871,14 @@
                     buyCommission, sellCommission, tax,
                     totalBuyCost, netSellProceeds,
                     profitAmount, profitRate,
-                    buyBrokerInfo, sellBrokerInfo, // 包含券商資訊
-                    buyCommissionOriginal, sellCommissionOriginal, // 原始手續費
+                    buyBrokerInfo, sellBrokerInfo,
+                    buyCommissionOriginal, sellCommissionOriginal,
                     hasBuy, hasSell
                 } = data;
                 
                 const buySection = document.getElementById('buySection');
                 if (hasBuy) {
                     document.getElementById('buyStockAmount').textContent = `NT$ ${formatNumber(buyStockAmount)}`;
-                    document.getElementById('buyBrokerDiscount').textContent = ``; 
-                    // ⭐ 修改：顯示未折扣的手續費
                     document.getElementById('buyCommission').textContent = `NT$ ${formatNumber(buyCommissionOriginal)}`;
                     document.getElementById('totalBuyCost').textContent = `NT$ ${formatNumber(totalBuyCost)}`;
                     buySection.style.display = 'block';
@@ -883,8 +889,6 @@
                 const sellSection = document.getElementById('sellSection');
                 if (hasSell) {
                     document.getElementById('sellStockAmount').textContent = `NT$ ${formatNumber(sellStockAmount)}`;
-                    document.getElementById('sellBrokerDiscount').textContent = ``; 
-                    // ⭐ 修改：顯示未折扣的手續費
                     document.getElementById('sellCommission').textContent = `NT$ ${formatNumber(sellCommissionOriginal)}`;
                     document.getElementById('tax').textContent = `NT$ ${formatNumber(tax)}`;
                     document.getElementById('netSellProceeds').textContent = `NT$ ${formatNumber(netSellProceeds)}`;
@@ -894,10 +898,20 @@
                 }
 
                 const profitSection = document.getElementById('profitSection');
+                const buyDiscountRateRow = document.getElementById('buyDiscountRateRow');
+                const sellDiscountRateRow = document.getElementById('sellDiscountRateRow');
+
                 if (hasBuy && hasSell) {
                     const totalCosts = buyCommission + sellCommission + tax;
                     const discountAmount = Math.max(0, (buyCommissionOriginal + sellCommissionOriginal) - (buyCommission + sellCommission));
                     
+                    // ⭐ 修改：顯示買賣折數
+                    document.getElementById('buyDiscountRate').textContent = `${(buyBrokerInfo.discountRate * 10).toFixed(1)}折`;
+                    buyDiscountRateRow.style.display = 'flex';
+                    
+                    document.getElementById('sellDiscountRate').textContent = `${(sellBrokerInfo.discountRate * 10).toFixed(1)}折`;
+                    sellDiscountRateRow.style.display = 'flex';
+
                     document.getElementById('totalCosts').textContent = `NT$ ${formatNumber(totalCosts)}`;
                     document.getElementById('discountAmount').textContent = `NT$ ${formatNumber(discountAmount)}`;
 
@@ -911,7 +925,10 @@
                     
                     profitSection.style.display = 'block';
                 } else {
+                    // 如果只有單邊交易，則不顯示損益分析區塊
                     profitSection.style.display = 'none';
+                    buyDiscountRateRow.style.display = 'none';
+                    sellDiscountRateRow.style.display = 'none';
                 }
                 
                 resultsDiv.style.display = 'block';
@@ -947,7 +964,6 @@
                 if (buyPrice) {
                     buyStockAmount = buyPrice * quantity * sharesPerUnit;
                     buyBrokerInfo = getBrokerInfo(broker, buyStockAmount);
-                    // ⭐ 修改：同時計算原始與折扣後手續費
                     buyCommissionOriginal = Math.round(buyStockAmount * 0.001425);
                     buyCommission = calculateCommission(buyStockAmount, buyBrokerInfo, stockType);
                     totalBuyCost = buyStockAmount + buyCommission;
@@ -956,7 +972,6 @@
                 if (sellPrice) {
                     sellStockAmount = sellPrice * quantity * sharesPerUnit;
                     sellBrokerInfo = getBrokerInfo(broker, sellStockAmount);
-                    // ⭐ 修改：同時計算原始與折扣後手續費
                     sellCommissionOriginal = Math.round(sellStockAmount * 0.001425);
                     sellCommission = calculateCommission(sellStockAmount, sellBrokerInfo, stockType);
                     tax = Math.round(sellStockAmount * 0.003);
