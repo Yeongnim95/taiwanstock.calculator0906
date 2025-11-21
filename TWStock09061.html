@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股交易金額計算器</title>
+    <title>台股交易計算器 (修正版)</title>
     <style>
         * {
             margin: 0;
@@ -276,10 +276,21 @@
             flex-direction: column;
         }
 
-        .stock-type-group {
+        .stock-type-group, .mode-group {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
+        }
+
+        /* 新增模式選擇的網格 */
+        .mode-group {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        @media (min-width: 600px) {
+            .mode-group {
+                grid-template-columns: 1fr 1fr 1fr 1fr;
+            }
         }
 
         .radio-group {
@@ -295,6 +306,7 @@
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
+            justify-content: center; /* 置中 */
         }
 
         .radio-group:hover {
@@ -306,6 +318,15 @@
             display: none;
         }
         
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            margin: 0;
+            cursor: pointer;
+            font-weight: normal;
+            font-size: 0.95em;
+        }
+
         .radio-group label::before {
             content: '';
             display: inline-block;
@@ -313,9 +334,10 @@
             height: 18px;
             border: 2px solid #ccc;
             border-radius: 50%;
-            margin-right: 10px;
+            margin-right: 8px;
             transition: all 0.3s ease;
             vertical-align: middle;
+            flex-shrink: 0;
         }
 
         .radio-group input[type="radio"]:checked + label::before {
@@ -328,11 +350,24 @@
             border-color: #3498db;
             background-color: #e3f2fd;
         }
+        
+        /* 特定模式的顏色區分 */
+        .radio-group.mode-short.active {
+            border-color: #27ae60;
+            background-color: #e8f5e9;
+        }
+        .radio-group.mode-short input[type="radio"]:checked + label::before {
+            border-color: #27ae60;
+            background-color: #27ae60;
+        }
 
-        .radio-group label {
-            margin: 0;
-            cursor: pointer;
-            font-weight: normal;
+        .radio-group.mode-daytrade.active {
+            border-color: #f39c12;
+            background-color: #fef9e7;
+        }
+        .radio-group.mode-daytrade input[type="radio"]:checked + label::before {
+            border-color: #f39c12;
+            background-color: #f39c12;
         }
 
         .calculate-btn {
@@ -415,7 +450,7 @@
         .sell-section .result-item:last-child {
             color: #e74c3c;
         }
-
+        
         .profit-section {
             border-left: 4px solid #f39c12;
         }
@@ -433,6 +468,12 @@
         .profit-zero {
             color: #7f8c8d;
             font-weight: bold;
+        }
+        
+        .warning-text {
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 0.9em;
         }
 
         .calculation-note {
@@ -569,7 +610,7 @@
     <div class="container">
         <div class="header">
             <h1>📈 台股交易計算器</h1>
-            <p>精準計算您的股票交易成本與獲利</p>
+            <p>精準計算做多、放空及當沖損益</p>
         </div>
 
         <div class="form-container">
@@ -619,7 +660,7 @@
             </div>
             
             <div class="calculation-note">
-                💡 <strong>使用提示：</strong>您可以只填入單邊價格計算成本，或同時填入兩邊價格計算完整損益。
+                💡 <strong>提示：</strong>融券及當沖請注意價格波動與保證金需求。當沖買賣價差不可超過10%。
             </div>
             
             <form id="stockCalculator">
@@ -630,7 +671,7 @@
                         <option value="fubon">富邦證券</option>
                         <option value="shinko">新光證券</option>
                         <option value="president">統一證券</option>
-                        <option value="sinopac">永豐金證券</option>
+                        <option value="sinopac">永豐證券</option>
                         <option value="taishin">台新證券</option>
                         <option value="pocketsec">口袋證券</option>
                         <option value="landbank">土銀證券</option>
@@ -665,17 +706,39 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <label>交易模式 <span class="required">*必選</span></label>
+                    <div class="mode-group">
+                        <div class="radio-group active">
+                            <input type="radio" id="modeSpot" name="tradeMode" value="spot" checked>
+                            <label for="modeSpot">現股做多</label>
+                        </div>
+                        <div class="radio-group mode-short">
+                            <input type="radio" id="modeMarginShort" name="tradeMode" value="margin_short">
+                            <label for="modeMarginShort">融券放空</label>
+                        </div>
+                        <div class="radio-group mode-daytrade">
+                            <input type="radio" id="modeDayLong" name="tradeMode" value="day_long">
+                            <label for="modeDayLong">沖買(先買賣)</label>
+                        </div>
+                         <div class="radio-group mode-daytrade">
+                            <input type="radio" id="modeDayShort" name="tradeMode" value="day_short">
+                            <label for="modeDayShort">沖賣(先賣買)</label>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="form-group">
-                    <label>股票價格 <span style="font-size: 0.9em; color: #666;">(至少填一)</span></label>
+                    <label>股票價格 <span style="font-size: 0.9em; color: #666;">(請依交易順序填寫)</span></label>
                     <div class="price-group">
                         <div class="price-input-container">
-                            <label for="buyPrice" style="font-size: 0.9em; margin-bottom: 5px;">買進價格 (元)</label>
-                            <input type="number" id="buyPrice" step="0.01" min="0" placeholder="買進價格">
+                            <label for="inputPrice1" style="font-size: 0.9em; margin-bottom: 5px;" id="priceLabel1">買進價格 (元)</label>
+                            <input type="number" id="inputPrice1" step="0.01" min="0" placeholder="價格">
                         </div>
                         <div class="price-input-container">
-                            <label for="sellPrice" style="font-size: 0.9em; margin-bottom: 5px;">賣出價格 (元)</label>
-                            <input type="number" id="sellPrice" step="0.01" min="0" placeholder="賣出價格">
+                            <label for="inputPrice2" style="font-size: 0.9em; margin-bottom: 5px;" id="priceLabel2">賣出價格 (元)</label>
+                            <input type="number" id="inputPrice2" step="0.01" min="0" placeholder="價格">
                         </div>
                     </div>
                 </div>
@@ -703,72 +766,12 @@
             </form>
             
             <div id="results" class="results">
-                <div class="result-section buy-section" id="buySection" style="display: none;">
-                    <h3>🟢 買入成本</h3>
-                    <div class="result-item">
-                        <span>股票金額：</span>
-                        <span id="buyStockAmount"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>手續費 (0.1425%)：</span>
-                        <span id="buyCommission"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>總買入成本 (折扣後)：</span>
-                        <span id="totalBuyCost"></span>
-                    </div>
-                </div>
-                <div class="result-section sell-section" id="sellSection" style="display: none;">
-                    <h3>🔴 賣出收益</h3>
-                    <div class="result-item">
-                        <span>股票金額：</span>
-                        <span id="sellStockAmount"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>手續費 (0.1425%)：</span>
-                        <span id="sellCommission"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>證券交易稅 (0.3%)：</span>
-                        <span id="tax"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>淨賣出收益 (折扣後)：</span>
-                        <span id="netSellProceeds"></span>
-                    </div>
-                </div>
-                <div class="result-section profit-section" id="profitSection" style="display: none;">
-                    <h3>📊 損益分析</h3>
-                     <div class="result-item" id="buyDiscountRateRow" style="display: none;">
-                        <span>買入優惠折數：</span>
-                        <span id="buyDiscountRate" class="profit-positive"></span>
-                    </div>
-                    <div class="result-item" id="sellDiscountRateRow" style="display: none;">
-                        <span>賣出優惠折數：</span>
-                        <span id="sellDiscountRate" class="profit-negative"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>手續費折扣優惠：</span>
-                        <span id="discountAmount"></span>
-                    </div>
-                     <div class="result-item">
-                        <span>總交易費用 (折扣後)：</span>
-                        <span id="totalCosts"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>試算損益：</span>
-                        <span id="profitAmount"></span>
-                    </div>
-                    <div class="result-item">
-                        <span>報酬率：</span>
-                        <span id="profitRate"></span>
-                    </div>
-                </div>
+                <div id="dynamicResultContent"></div>
             </div>
         </div>
         
         <div class="footer-note">
-            ⚠️ 註：交易有賺有賠，請小心交易。所有計算結果僅供參考。
+            ⚠️ 註：交易有賺有賠，融券及當沖風險較高，請小心交易。所有計算結果僅供參考。
         </div>
     </div>
 
@@ -784,7 +787,14 @@
             const quantityInput = document.getElementById('quantity');
             const quantityLabel = document.getElementById('quantityLabel');
             const resultsDiv = document.getElementById('results');
+            const dynamicResultContent = document.getElementById('dynamicResultContent');
             const radioGroups = document.querySelectorAll('.radio-group');
+            
+            // 價格輸入框現在使用通用ID
+            const inputPrice1 = document.getElementById('inputPrice1');
+            const inputPrice2 = document.getElementById('inputPrice2');
+            const priceLabel1 = document.getElementById('priceLabel1');
+            const priceLabel2 = document.getElementById('priceLabel2');
             
             const menuBtn = document.getElementById('menuBtn');
             const sideMenu = document.getElementById('sideMenu');
@@ -803,17 +813,56 @@
                 selectedItem.classList.add('active');
                 closeMenu();
             }
+            
+            function closeMenu() {
+                sideMenu.classList.remove('open');
+                menuOverlay.classList.remove('active');
+            }
 
             // --- 計算器輔助函式 ---
             function formatNumber(num) {
                 if (typeof num !== 'number') return num;
                 return num.toLocaleString('en-US');
             }
+            
+            // 顯示錯誤提示
+            function showError(message) {
+                alert(`❌ 計算錯誤：\n${message}`);
+            }
 
             // --- UI 互動函式 ---
-            function selectStockType(type) {
-                radioGroups.forEach(group => group.classList.remove('active'));
+            function updateUIForMode(modeId) {
+                // 移除所有 active 樣式並重設
+                document.querySelectorAll('input[name="tradeMode"]').forEach(input => {
+                     const group = input.closest('.radio-group');
+                     if(group) group.classList.remove('active');
+                });
                 
+                const selectedInput = document.getElementById(modeId);
+                if(selectedInput) {
+                     selectedInput.checked = true;
+                     selectedInput.closest('.radio-group').classList.add('active');
+                     
+                     // 更新價格標籤，讓使用者知道填寫順序
+                     if (modeId === 'modeMarginShort' || modeId === 'modeDayShort') {
+                         // 先賣後買 (空單)
+                         priceLabel1.textContent = '賣出/放空價格 (元)';
+                         priceLabel2.textContent = '買進/回補價格 (元)';
+                     } else {
+                         // 先買後賣 (多單)
+                         priceLabel1.textContent = '買進價格 (元)';
+                         priceLabel2.textContent = '賣出價格 (元)';
+                     }
+                }
+            }
+
+            function selectStockType(type) {
+                // 處理交易類型 (整張/零股) 的選取樣式
+                document.querySelectorAll('input[name="stockType"]').forEach(input => {
+                     const group = input.closest('.radio-group');
+                     if(group) group.classList.remove('active');
+                });
+
                 const selectedRadio = document.getElementById(type);
                 if (selectedRadio) {
                     selectedRadio.checked = true;
@@ -834,6 +883,13 @@
                 customDiscountGroup.style.display = (brokerSelect.value === 'custom') ? 'block' : 'none';
                 customDiscountInput.required = (brokerSelect.value === 'custom');
             }
+            
+            // 監聽交易模式變化
+            document.querySelectorAll('input[name="tradeMode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    updateUIForMode(this.id);
+                });
+            });
 
             // --- 核心計算邏輯 ---
             function getBrokerInfo(broker, stockAmount) {
@@ -842,7 +898,7 @@
                     case 'fubon': info = { ...info, discountRate: stockAmount >= 1000000 ? 0.6 : 0.18, name: '富邦' }; break;
                     case 'shinko': info = { ...info, discountRate: 0.1, name: '新光' }; break;
                     case 'president': info = { ...info, discountRate: 0.168, name: '統一', minFeeRegular: 1 }; break;
-                    case 'sinopac': info = { ...info, discountRate: 0.28, name: '永豐金' }; break; 
+                    case 'sinopac': info = { ...info, discountRate: 0.28, name: '永豐' }; break; 
                     case 'pocketsec': info = { ...info, discountRate: 0.28, name: '口袋' }; break; 
                     case 'kgi': info = { ...info, discountRate: 0.6, name: '凱基' }; break; 
                     case 'yuanta': info = { ...info, discountRate: 0.6, name: '元大' }; break; 
@@ -864,103 +920,216 @@
                 const calculatedFee = stockAmount * 0.001425 * brokerInfo.discountRate;
                 return Math.max(minFee, Math.round(calculatedFee));
             }
+
+            function validatePriceLimit(buyPrice, sellPrice) {
+                if (!buyPrice || !sellPrice) return true;
+                const diff = Math.abs(buyPrice - sellPrice);
+                // 以買賣價格中較高者當分母會比較寬鬆，這裡以較低價為基準來做嚴格判斷
+                const base = Math.min(buyPrice, sellPrice); 
+                const ratio = diff / base; 
+                // 台股漲跌幅10%，簡單檢核是否超過 10.5% 幅度作為警示
+                return ratio <= 0.105; 
+            }
             
-            function updateResultsUI(data) {
+            // --- 結果渲染 ---
+            function generateResultHTML(data) {
                 const {
-                    buyStockAmount, sellStockAmount,
+                    mode, buyStockAmount, sellStockAmount,
                     buyCommission, sellCommission, tax,
-                    totalBuyCost, netSellProceeds,
+                    totalBuyCost, netSellProceeds, // 這些是現金流概念
                     profitAmount, profitRate,
                     buyBrokerInfo, sellBrokerInfo,
                     buyCommissionOriginal, sellCommissionOriginal,
-                    hasBuy, hasSell
+                    marginDeposit, maintenanceRatio, // 融券特有
+                    hasBuy, hasSell, taxRateDisplay
                 } = data;
+
+                let html = '';
                 
-                const buySection = document.getElementById('buySection');
+                // 區塊 1: 買進/回補 明細
                 if (hasBuy) {
-                    document.getElementById('buyStockAmount').textContent = `NT$ ${formatNumber(buyStockAmount)}`;
-                    document.getElementById('buyCommission').textContent = `NT$ ${formatNumber(buyCommissionOriginal)}`;
-                    document.getElementById('totalBuyCost').textContent = `NT$ ${formatNumber(totalBuyCost)}`;
-                    buySection.style.display = 'block';
-                } else {
-                    buySection.style.display = 'none';
+                    const title = (mode === 'margin_short' || mode === 'day_short') ? '🔴 回補買進成本' : '🟢 買入成本';
+                    const cssClass = (mode === 'margin_short' || mode === 'day_short') ? 'sell-section' : 'buy-section'; // 回補算是一種"結束空單"的行為
+                    
+                    html += `
+                    <div class="result-section ${cssClass}">
+                        <h3>${title}</h3>
+                        <div class="result-item">
+                            <span>股票金額：</span>
+                            <span>NT$ ${formatNumber(buyStockAmount)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>手續費 (0.1425%)：</span>
+                            <span>NT$ ${formatNumber(buyCommission)} <small style="color:#888">(${buyCommissionOriginal})</small></span>
+                        </div>
+                        <div class="result-item">
+                            <span>總買入/回補支出：</span>
+                            <span>NT$ ${formatNumber(totalBuyCost)}</span>
+                        </div>
+                    </div>`;
                 }
 
-                const sellSection = document.getElementById('sellSection');
+                // 區塊 2: 賣出/放空 明細
                 if (hasSell) {
-                    document.getElementById('sellStockAmount').textContent = `NT$ ${formatNumber(sellStockAmount)}`;
-                    document.getElementById('sellCommission').textContent = `NT$ ${formatNumber(sellCommissionOriginal)}`;
-                    document.getElementById('tax').textContent = `NT$ ${formatNumber(tax)}`;
-                    document.getElementById('netSellProceeds').textContent = `NT$ ${formatNumber(netSellProceeds)}`;
-                    sellSection.style.display = 'block';
-                } else {
-                    sellSection.style.display = 'none';
+                    const title = (mode === 'margin_short' || mode === 'day_short') ? '🟢 放空賣出收益 (暫存)' : '🔴 賣出收益';
+                    const cssClass = (mode === 'margin_short' || mode === 'day_short') ? 'buy-section' : 'sell-section';
+                    
+                    let extraRows = '';
+                    if (mode === 'margin_short') {
+                         extraRows += `
+                         <div class="result-item" style="color: #8e44ad; font-weight:bold;">
+                            <span>融券保證金 (90%)：</span>
+                            <span>NT$ ${formatNumber(marginDeposit)}</span>
+                        </div>
+                        <div class="result-item">
+                             <span style="font-size:0.85em; color:#666;">(擔保品總值 = 賣出收益 + 保證金)</span>
+                        </div>
+                         `;
+                    }
+
+                    html += `
+                    <div class="result-section ${cssClass}">
+                        <h3>${title}</h3>
+                        <div class="result-item">
+                            <span>股票金額：</span>
+                            <span>NT$ ${formatNumber(sellStockAmount)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>手續費 (0.1425%)：</span>
+                            <span>NT$ ${formatNumber(sellCommission)} <small style="color:#888">(${sellCommissionOriginal})</small></span>
+                        </div>
+                        <div class="result-item">
+                            <span>證券交易稅 (${taxRateDisplay})：</span>
+                            <span>NT$ ${formatNumber(tax)}</span>
+                        </div>
+                        ${extraRows}
+                        <div class="result-item">
+                            <span>淨賣出收益：</span>
+                            <span>NT$ ${formatNumber(netSellProceeds)}</span>
+                        </div>
+                    </div>`;
                 }
 
-                const profitSection = document.getElementById('profitSection');
-                const buyDiscountRateRow = document.getElementById('buyDiscountRateRow');
-                const sellDiscountRateRow = document.getElementById('sellDiscountRateRow');
-
+                // 區塊 3: 損益分析
                 if (hasBuy && hasSell) {
+                    let profitClass = profitAmount > 0 ? 'profit-positive' : (profitAmount < 0 ? 'profit-negative' : 'profit-zero');
+                    let extraProfitRows = '';
+                    
+                    if (mode === 'margin_short' && maintenanceRatio !== null) {
+                        const ratioClass = maintenanceRatio < 130 ? 'warning-text' : 'profit-positive';
+                        extraProfitRows += `
+                        <div class="result-item">
+                            <span>預估維持率：</span>
+                            <span class="${ratioClass}">${maintenanceRatio.toFixed(2)}% ${maintenanceRatio < 130 ? '(追繳!)' : ''}</span>
+                        </div>`;
+                    }
+
                     const totalCosts = buyCommission + sellCommission + tax;
-                    const discountAmount = Math.max(0, (buyCommissionOriginal + sellCommissionOriginal) - (buyCommission + sellCommission));
-                    
-                    // ⭐ 修改：顯示買賣折數
-                    document.getElementById('buyDiscountRate').textContent = `${(buyBrokerInfo.discountRate * 10).toFixed(1)}折`;
-                    buyDiscountRateRow.style.display = 'flex';
-                    
-                    document.getElementById('sellDiscountRate').textContent = `${(sellBrokerInfo.discountRate * 10).toFixed(1)}折`;
-                    sellDiscountRateRow.style.display = 'flex';
 
-                    document.getElementById('totalCosts').textContent = `NT$ ${formatNumber(totalCosts)}`;
-                    document.getElementById('discountAmount').textContent = `NT$ ${formatNumber(discountAmount)}`;
-
-                    const profitAmountSpan = document.getElementById('profitAmount');
-                    profitAmountSpan.textContent = `NT$ ${formatNumber(profitAmount)}`;
-                    profitAmountSpan.className = profitAmount > 0 ? 'profit-positive' : (profitAmount < 0 ? 'profit-negative' : 'profit-zero');
-                    
-                    const profitRateSpan = document.getElementById('profitRate');
-                    profitRateSpan.textContent = `${profitRate.toFixed(2)}%`;
-                    profitRateSpan.className = profitRate > 0 ? 'profit-positive' : (profitRate < 0 ? 'profit-negative' : 'profit-zero');
-                    
-                    profitSection.style.display = 'block';
-                } else {
-                    // 如果只有單邊交易，則不顯示損益分析區塊
-                    profitSection.style.display = 'none';
-                    buyDiscountRateRow.style.display = 'none';
-                    sellDiscountRateRow.style.display = 'none';
+                    html += `
+                    <div class="result-section profit-section">
+                        <h3>📊 損益分析</h3>
+                        <div class="result-item">
+                             <span>交易模式：</span>
+                             <span style="font-weight:bold;">${getModeName(mode)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>總交易成本 (手續費+稅)：</span>
+                            <span>NT$ ${formatNumber(totalCosts)}</span>
+                        </div>
+                        ${extraProfitRows}
+                        <div class="result-item">
+                            <span>最終損益：</span>
+                            <span class="${profitClass}" style="font-size: 1.3em;">NT$ ${formatNumber(profitAmount)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span>報酬率：</span>
+                            <span class="${profitClass}">${profitRate.toFixed(2)}%</span>
+                        </div>
+                    </div>`;
                 }
                 
-                resultsDiv.style.display = 'block';
-                resultsDiv.scrollIntoView({ behavior: 'smooth' });
+                return html;
+            }
+            
+            function getModeName(mode) {
+                switch(mode) {
+                    case 'spot': return '現股做多';
+                    case 'margin_short': return '融券放空';
+                    case 'day_long': return '現股當沖 (先買後賣)';
+                    case 'day_short': return '現股當沖 (先賣後買)';
+                    default: return '未知';
+                }
             }
 
             // --- 表單提交處理 ---
             function handleFormSubmit(event) {
                 event.preventDefault();
                 const broker = brokerSelect.value;
-                const buyPrice = parseFloat(document.getElementById('buyPrice').value) || null;
-                const sellPrice = parseFloat(document.getElementById('sellPrice').value) || null;
+                // 取得原始輸入值
+                const p1Value = parseFloat(inputPrice1.value) || null;
+                const p2Value = parseFloat(inputPrice2.value) || null;
+                
                 const stockTypeElement = document.querySelector('input[name="stockType"]:checked');
+                const tradeModeElement = document.querySelector('input[name="tradeMode"]:checked');
                 let quantity = parseInt(quantityInput.value) || 1;
 
-                if (!broker || !stockTypeElement || (!buyPrice && !sellPrice)) {
-                    alert('請檢查券商、交易類型及價格是否都已正確填寫！');
-                    return;
+                // --- 錯誤檢查開始 ---
+                if (!broker) return showError('請選擇一家券商！');
+                if (!tradeModeElement) return showError('請選擇交易模式！');
+                if (!stockTypeElement) return showError('請選擇交易類型 (整張/零股)！');
+                if (!p1Value && !p2Value) return showError('請至少輸入一個價格！');
+                
+                if (broker === 'custom') {
+                    if (!customDiscountInput.value || parseFloat(customDiscountInput.value) <= 0 || parseFloat(customDiscountInput.value) > 10) {
+                        return showError('請輸入有效的自訂折數 (範圍 0.1 - 10)！');
+                    }
                 }
-                if (broker === 'custom' && (!customDiscountInput.value || parseFloat(customDiscountInput.value) <= 0 || parseFloat(customDiscountInput.value) > 10)) {
-                    return alert('請輸入有效的自訂折數 (0.1-10)！');
+                // --- 錯誤檢查結束 ---
+
+                const mode = tradeModeElement.value;
+                
+                // --- 關鍵修正：根據模式指派 買入價 與 賣出價 ---
+                let buyPrice = null;
+                let sellPrice = null;
+
+                if (mode === 'spot' || mode === 'day_long') {
+                    // 做多模式：輸入1=買進，輸入2=賣出
+                    buyPrice = p1Value;
+                    sellPrice = p2Value;
+                } else {
+                    // 放空模式：輸入1=賣出(放空)，輸入2=買進(回補)
+                    sellPrice = p1Value;
+                    buyPrice = p2Value;
+                }
+
+                // 當沖檢查漲跌幅
+                if ((mode === 'day_long' || mode === 'day_short') && buyPrice && sellPrice) {
+                    if (!validatePriceLimit(buyPrice, sellPrice)) {
+                         if(!confirm("⚠️ 警告：買賣價差過大 (>10%)，可能不符合台股當日漲跌幅限制。\n\n是否繼續計算？")) {
+                             return;
+                         }
+                    }
                 }
 
                 const stockType = stockTypeElement.value;
                 const sharesPerUnit = stockType === 'lot' ? 1000 : 1;
 
-                let buyStockAmount = null, sellStockAmount = null;
-                let buyCommission = null, sellCommission = null;
-                let buyCommissionOriginal = null, sellCommissionOriginal = null;
-                let tax = null, totalBuyCost = null, netSellProceeds = null;
+                let buyStockAmount = 0, sellStockAmount = 0;
+                let buyCommission = 0, sellCommission = 0;
+                let buyCommissionOriginal = 0, sellCommissionOriginal = 0;
+                let tax = 0, totalBuyCost = 0, netSellProceeds = 0;
                 let buyBrokerInfo = {}, sellBrokerInfo = {};
+                let taxRate = 0.003; // 預設稅率
+                let taxRateDisplay = "0.3%";
+                
+                // 設定稅率
+                if (mode === 'day_long' || mode === 'day_short') {
+                    taxRate = 0.0015;
+                    taxRateDisplay = "0.15%";
+                }
 
+                // 計算買入部分 (現股買進 或 回補)
                 if (buyPrice) {
                     buyStockAmount = buyPrice * quantity * sharesPerUnit;
                     buyBrokerInfo = getBrokerInfo(broker, buyStockAmount);
@@ -969,38 +1138,76 @@
                     totalBuyCost = buyStockAmount + buyCommission;
                 }
 
+                // 計算賣出部分 (現股賣出 或 放空)
                 if (sellPrice) {
                     sellStockAmount = sellPrice * quantity * sharesPerUnit;
                     sellBrokerInfo = getBrokerInfo(broker, sellStockAmount);
                     sellCommissionOriginal = Math.round(sellStockAmount * 0.001425);
                     sellCommission = calculateCommission(sellStockAmount, sellBrokerInfo, stockType);
-                    tax = Math.round(sellStockAmount * 0.003);
+                    tax = Math.round(sellStockAmount * taxRate);
                     netSellProceeds = sellStockAmount - sellCommission - tax;
                 }
                 
-                let profitAmount = null, profitRate = null;
-                if (totalBuyCost !== null && netSellProceeds !== null) {
-                    profitAmount = netSellProceeds - totalBuyCost;
-                    profitRate = totalBuyCost > 0 ? (profitAmount / totalBuyCost) * 100 : 0;
+                // 計算損益
+                let profitAmount = 0, profitRate = 0;
+                let marginDeposit = 0;
+                let maintenanceRatio = null;
+                
+                if (buyPrice && sellPrice) {
+                    // 通用損益公式：(賣出淨收 - 買入總支)
+                    // 注意：這已經包含了手續費與稅
+                    profitAmount = netSellProceeds - totalBuyCost; 
+                    
+                    let costBase = 0;
+
+                    if (mode === 'spot' || mode === 'day_long') {
+                        // 做多成本 = 買入成本
+                        costBase = totalBuyCost;
+                    } else if (mode === 'margin_short') {
+                        // 融券放空
+                        // 成本 = 保證金 (90%)
+                        // 另外計算維持率
+                        marginDeposit = Math.round(sellStockAmount * 0.9);
+                        costBase = marginDeposit; // 報酬率分母通常用自有資金(保證金)算
+                        
+                        // 維持率 = (融券擔保品 + 保證金) / 股票市值
+                        // 融券擔保品 = 賣出扣除費稅後的錢 (netSellProceeds)
+                        // 股票市值 = 目前股價(買回價) * 股數 (buyStockAmount)
+                        const collateral = netSellProceeds + marginDeposit;
+                        if (buyStockAmount > 0) {
+                            maintenanceRatio = (collateral / buyStockAmount) * 100;
+                        }
+                        
+                    } else if (mode === 'day_short') {
+                        // 當沖先賣後買
+                        // 成本通常視為 0 (無本當沖)，但計算報酬率時分母不能為0
+                        // 一般習慣用賣出金額或保證金當分母，這裡為了避免無限大，用賣出金額當參考成本
+                        costBase = sellStockAmount; 
+                    }
+
+                    profitRate = costBase > 0 ? (profitAmount / costBase) * 100 : 0;
                 }
 
-                updateResultsUI({
-                    buyStockAmount: Math.round(buyStockAmount || 0),
-                    sellStockAmount: Math.round(sellStockAmount || 0),
-                    buyCommission: buyCommission,
-                    sellCommission: sellCommission,
-                    buyCommissionOriginal: buyCommissionOriginal,
-                    sellCommissionOriginal: sellCommissionOriginal,
-                    tax: tax,
-                    totalBuyCost: Math.round(totalBuyCost || 0),
-                    netSellProceeds: Math.round(netSellProceeds || 0),
-                    profitAmount: Math.round(profitAmount || 0),
-                    profitRate: profitRate,
-                    buyBrokerInfo: buyBrokerInfo,
-                    sellBrokerInfo: sellBrokerInfo,
-                    hasBuy: buyPrice !== null,
-                    hasSell: sellPrice !== null
+                // 渲染畫面
+                const html = generateResultHTML({
+                    mode,
+                    buyStockAmount: Math.round(buyStockAmount),
+                    sellStockAmount: Math.round(sellStockAmount),
+                    buyCommission, sellCommission,
+                    buyCommissionOriginal, sellCommissionOriginal,
+                    tax, taxRateDisplay,
+                    totalBuyCost, netSellProceeds,
+                    profitAmount: Math.round(profitAmount),
+                    profitRate,
+                    buyBrokerInfo, sellBrokerInfo,
+                    marginDeposit, maintenanceRatio,
+                    hasBuy: !!buyPrice,
+                    hasSell: !!sellPrice
                 });
+                
+                dynamicResultContent.innerHTML = html;
+                resultsDiv.style.display = 'block';
+                resultsDiv.scrollIntoView({ behavior: 'smooth' });
             }
 
             // --- 事件監聽器初始化 ---
@@ -1009,9 +1216,15 @@
                 brokerSelect.addEventListener('change', handleBrokerChange);
                 
                 radioGroups.forEach(group => {
-                    group.addEventListener('click', function () {
+                    group.addEventListener('click', function (e) {
+                        // 防止觸發兩次 (label 點擊)
+                        if(e.target.tagName === 'LABEL') return;
+                        
                         const radioInput = this.querySelector('input[type="radio"]');
-                        if (radioInput) selectStockType(radioInput.id);
+                        if (radioInput) {
+                             if(radioInput.name === 'stockType') selectStockType(radioInput.id);
+                             if(radioInput.name === 'tradeMode') updateUIForMode(radioInput.id);
+                        }
                     });
                 });
                 
