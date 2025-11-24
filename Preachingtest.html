@@ -139,7 +139,6 @@
         
         .toolbar-left { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: bold; color: #555; flex-wrap: wrap; }
         
-        /* 統計數字樣式 */
         .stat-item { display: flex; align-items: center; white-space: nowrap; }
         .stat-divider { margin: 0 8px; color: #ccc; }
         .highlight-stat { color: #2e7d32; }
@@ -240,7 +239,7 @@
 <nav>
     <div class="nav-left">
         <div class="nav-title">
-        <div class="nav-title">🌱          
+        <div class="nav-title">🌱
         <span id="txt-app-title">전도 관리 시스템</span>
         </div>
         <div class="menu-items">
@@ -296,7 +295,6 @@
         <div class="backend-toolbar">
             <div class="toolbar-left">
                 <span class="stat-item" id="txt-total-count">섭외자: 0명</span>
-                
                 <span class="stat-divider">|</span>
                 <span class="stat-item highlight-stat" id="txt-interaction-count">실제 교류 (대화): 0명</span>
 
@@ -335,7 +333,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 【重要】請確認您的 Firebase Config (此處已預填您的設定)
+    // 【重要】請確認您的 Firebase Config
     // ------------------------------------------------------------------
     const firebaseConfig = {
         apiKey: "AIzaSyBXnq1RzY0zxGE0trwLPR-PHtdfFCvRw0A",
@@ -351,7 +349,6 @@
     let dbInstance;
     let cloudEnabled = false;
 
-    // 嘗試初始化 Firebase
     try {
         if (firebaseConfig.apiKey) {
             const app = initializeApp(firebaseConfig);
@@ -367,7 +364,7 @@
 
     // --- 全域變數與邏輯 ---
     let currentLang = localStorage.getItem('app_lang') || 'ko'; 
-    let localDb = []; // 現在這是從雲端同步下來的鏡像資料
+    let localDb = [];
     let sortDesc = true; 
     let isEditMode = false;
 
@@ -380,7 +377,7 @@
             phId: "예: 9999", phName: "예: 김철수", phContent: "대화 내용이나 기도 제목 입력...",
             btnSubmit: "등록하기", headerBackend: "데이터 관리",
             txtSelectAll: "전체 선택", txtTotal: "섭외자: ", txtPerson: "명",
-            txtInteraction: "실제 교류 (대화): ", // 新增翻譯
+            txtInteraction: "실제 교류 (대화): ",
             btnDelete: "선택 삭제", btnEdit: "편집", btnDone: "완료",
             colId: "번호", colName: "이름", colDate: "최근 날짜", colContent: "최신 내용",
             statusFound: "✔ 기존 데이터 발견: ", statusNew: "✚ 새로운 번호/이름입니다.",
@@ -390,7 +387,9 @@
             alertConfirmDelete: "선택한 섭외자와 모든 기록을 영구적으로 삭제하시겠습니까?",
             alertDeleted: "삭제되었습니다.", alertDeleteLog: "이 기록을 삭제하시겠습니까?",
             tagMe: "본인", tagOther: "상대", msgEmpty: "(기록 없음)",
-            msgCloudError: "Firebase 설정이 필요합니다. 코드를 확인해주세요."
+            msgCloudError: "Firebase 설정이 필요합니다. 코드를 확인해주세요.",
+            errIdConflict: "오류: 이 번호는 이미 다른 사람에게 할당되어 있습니다.",
+            errNameConflict: "오류: 이 이름은 이미 다른 번호를 사용 중입니다."
         },
         zh: {
             appTitle: "傳道整理系統", btnEntry: "傳道登錄", btnBackend: "後台資料",
@@ -400,7 +399,7 @@
             phId: "例: 9999", phName: "例: 金大中", phContent: "請輸入對話重點或備忘...",
             btnSubmit: "登錄資料", headerBackend: "後台登錄資料",
             txtSelectAll: "全選", txtTotal: "涉外者人數: ", txtPerson: " 人",
-            txtInteraction: "實際交流 (有對話): ", // 新增翻譯
+            txtInteraction: "實際交流 (有對話): ",
             btnDelete: "刪除選取", btnEdit: "編輯", btnDone: "完成",
             colId: "編號", colName: "姓名", colDate: "最近日期", colContent: "最新內容",
             statusFound: "✔ 已找到舊資料：", statusNew: "✚ 這是新的編號，請輸入姓名",
@@ -410,11 +409,12 @@
             alertConfirmDelete: "確定要永久刪除這些檔案及其所有紀錄嗎？",
             alertDeleted: "刪除完成！", alertDeleteLog: "確定要刪除這條紀錄嗎？",
             tagMe: "我", tagOther: "他", msgEmpty: "(尚無紀錄)",
-            msgCloudError: "尚未設定雲端金鑰，無法儲存。請參閱說明設置 Firebase。"
+            msgCloudError: "尚未設定雲端金鑰，無法儲存。請參閱說明設置 Firebase。",
+            errIdConflict: "錯誤：此編號已經被其他人使用，請檢查。",
+            errNameConflict: "錯誤：此姓名已經擁有另一個編號，請檢查。"
         }
     };
 
-    // 啟動時監聽雲端資料
     if (cloudEnabled) {
         const q = collection(dbInstance, "missionary_data");
         onSnapshot(q, (snapshot) => {
@@ -422,25 +422,20 @@
             snapshot.forEach((doc) => {
                 localDb.push(doc.data());
             });
-            // 資料更新後重新渲染
             renderBackend();
-            // 如果正在輸入 ID，重新觸發檢查
             const activeId = document.getElementById('idInput').value;
             if(activeId) window.handleIdInput();
         });
     } else {
-        // 無金鑰時的提示
         document.getElementById('dataList').innerHTML = `<div style="padding:20px; text-align:center; color:red;">${i18n[currentLang].msgCloudError}</div>`;
     }
 
-    // 初始化 UI
     window.onload = function() {
         document.querySelector('.lang-select').value = currentLang;
         applyLanguage();
         document.getElementById('recordDate').valueAsDate = new Date();
     };
 
-    // 將函數掛載到 window 以便 HTML 呼叫
     window.setLanguage = (lang) => {
         currentLang = lang;
         localStorage.setItem('app_lang', lang);
@@ -474,11 +469,20 @@
         updateCounter();
     }
 
-    // --- 業務邏輯 ---
+    // --- 修正: 自動清除與嚴格檢查邏輯 ---
 
     window.handleIdInput = () => {
         const t = i18n[currentLang];
         const idVal = document.getElementById('idInput').value.trim();
+        
+        // 修正 1: 若清空編號，名字也自動清空
+        if (!idVal) {
+            document.getElementById('nameInput').value = '';
+            document.getElementById('statusMsg').style.display = 'none';
+            window.updateReplyOption(null);
+            return;
+        }
+
         const user = localDb.find(u => u.id === idVal);
         if (user) {
             document.getElementById('nameInput').value = user.name;
@@ -494,6 +498,15 @@
     window.handleNameInput = () => {
         const t = i18n[currentLang];
         const nameVal = document.getElementById('nameInput').value.trim();
+        
+        // 修正 1: 若清空名字，編號也自動清空
+        if (!nameVal) {
+            document.getElementById('idInput').value = '';
+            document.getElementById('statusMsg').style.display = 'none';
+            window.updateReplyOption(null);
+            return;
+        }
+
         const user = localDb.find(u => u.name === nameVal);
         if (user) {
             document.getElementById('idInput').value = user.id;
@@ -536,15 +549,27 @@
 
         if (!id || !name || !date || !content) { alert(t.alertIncomplete); return; }
 
+        // 修正 2: 嚴格檢查 ID 與 Name 的配對
+        const existingUserById = localDb.find(u => u.id === id);
+        if (existingUserById && existingUserById.name !== name) {
+            alert(t.errIdConflict + `\n(ID: ${id} -> ${existingUserById.name})`);
+            return;
+        }
+
+        const existingUserByName = localDb.find(u => u.name === name);
+        if (existingUserByName && existingUserByName.id !== id) {
+            alert(t.errNameConflict + `\n(${name} -> ID: ${existingUserByName.id})`);
+            return;
+        }
+
         let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
         const userRef = doc(dbInstance, "missionary_data", id);
 
-        // 檢查是否已存在
-        let user = localDb.find(u => u.id === id);
+        // 檢查是否已存在 (前面已通過配對檢查，這裡是安全的)
         let updatedLogs = [];
         
-        if (user) {
-            updatedLogs = [...user.logs, { date, type: typeLabel, content }];
+        if (existingUserById) {
+            updatedLogs = [...existingUserById.logs, { date, type: typeLabel, content }];
             await setDoc(userRef, { id, name, logs: updatedLogs }, { merge: true });
             alert(t.alertUpdate + name);
         } else {
@@ -564,7 +589,6 @@
 
         if (toDelete.length === 0) return;
         if (confirm(t.alertConfirmDelete)) {
-            // 批次刪除
             for (const uid of toDelete) {
                 await deleteDoc(doc(dbInstance, "missionary_data", uid));
             }
@@ -577,7 +601,6 @@
         }
     };
 
-    // 單筆 Log 刪除
     window.deleteSingleLog = async (event, uid, logIndex) => {
         if (!cloudEnabled) return;
         event.stopPropagation();
@@ -585,7 +608,6 @@
         if(confirm(t.alertDeleteLog)) {
             const user = localDb.find(u => u.id === uid);
             if(user) {
-                // 需要確保順序一致，因為 UI 是排序過的
                 const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
                 sortedLogs.splice(logIndex, 1);
                 
@@ -597,7 +619,6 @@
         }
     };
 
-    // 修改日期
     window.editDate = (event, uid, logIndex, el) => {
         if (!isEditMode) return;
         event.stopPropagation();
@@ -623,7 +644,6 @@
         input.onclick = (e) => e.stopPropagation();
     };
 
-    // 修改內容
     window.editContent = (event, uid, logIndex, el) => {
         if (!isEditMode) return;
         event.stopPropagation();
@@ -649,15 +669,12 @@
         input.onclick = (e) => e.stopPropagation();
     };
 
-    // --- UI 渲染邏輯 ---
-
     function renderBackend() {
         if (!cloudEnabled) return;
         const t = i18n[currentLang];
         const listContainer = document.getElementById('dataList');
         listContainer.innerHTML = '';
 
-        // 處理與排序
         const processedUsers = localDb.map(user => {
             const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
             const lastLog = sortedLogs[0] || { date: '0000-00-00', content: t.msgEmpty };
@@ -714,8 +731,6 @@
         updateCounter();
     }
 
-    // --- 其他工具 ---
-    
     window.toggleEditMode = () => {
         isEditMode = !isEditMode;
         const container = document.getElementById('dataListContainer');
@@ -756,7 +771,7 @@
         setTimeout(() => {
             const d = document.getElementById(`details-${uid}`);
             if(d) { d.style.display = 'block'; d.previousElementSibling.classList.add('expanded'); }
-        }, 100); // 雲端更新稍慢，延時稍長
+        }, 100); 
     }
 
     window.toggleSort = () => { sortDesc = !sortDesc; document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲'; renderBackend(); };
@@ -768,14 +783,10 @@
         else { document.getElementById('backendSection').classList.add('active-section'); document.getElementById('btn-backend').classList.add('active'); renderBackend(); }
     };
     
-    // 統計邏輯更新
     function updateCounter() {
         const t = i18n[currentLang];
-        // 總人數
         document.getElementById('txt-total-count').textContent = t.txtTotal + localDb.length + t.txtPerson;
         
-        // 實際交流人數計算
-        // 條件：至少有一個 'me' 且至少有一個 'other'
         const interactionCount = localDb.filter(user => {
             const hasMe = user.logs.some(log => log.type === 'me');
             const hasOther = user.logs.some(log => log.type === 'other');
