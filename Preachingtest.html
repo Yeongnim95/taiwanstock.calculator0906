@@ -75,10 +75,11 @@
             outline: none;
         }
 
-        /* --- 容器 --- */
+        /* --- 容器 (已調整寬度) --- */
         .container {
             width: 100%;
-            max-width: 900px;
+            /* 修改：從 900px 增加到 1200px，讓電腦版視野更寬廣 */
+            max-width: 1200px;
             margin: 20px auto;
             background: rgba(255, 255, 255, 0.98);
             border-radius: 16px;
@@ -104,9 +105,16 @@
         .form-group { margin-bottom: 5px; }
         
         label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--dark-green); font-size: 0.9rem; }
+        
+        /* 修改：增加 max-width 防止手機版日期溢出 */
         input, select, textarea {
-            width: 100%; padding: 10px; border: 1px solid var(--border-color);
-            border-radius: 6px; font-size: 15px; outline: none;
+            width: 100%; 
+            max-width: 100%; 
+            padding: 10px; 
+            border: 1px solid var(--border-color);
+            border-radius: 6px; 
+            font-size: 15px; 
+            outline: none;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15); }
         
@@ -200,21 +208,31 @@
         .tag-me { background: #26a69a; }
         .tag-other { background: #ef5350; }
 
-        /* RWD */
+        /* RWD 響應式調整 */
         @media (max-width: 700px) {
-            .container { padding: 15px; margin: 10px auto; width: 96%; }
+            /* 修改：調整寬度比例與內距，避免手機版太擠或超出 */
+            .container { 
+                padding: 20px 15px; 
+                margin: 10px auto; 
+                width: 95%; 
+            }
             .form-grid { grid-template-columns: 1fr; }
             .nav-title span { display: none; }
             .list-header-row { display: none; } 
+            
             .grid-row, .list-container.edit-mode .grid-row {
                 display: flex; flex-direction: column; align-items: flex-start; gap: 5px; position: relative;
                 padding-left: 15px;
             }
+            /* 編輯模式下的內距調整，確保不被 checkbox 擋住 */
             .list-container.edit-mode .grid-row { padding-left: 45px; } 
+            
             .check-cell { position: absolute; left: 10px; top: 15px; width: auto; opacity: 0; pointer-events: none;}
             .list-container.edit-mode .check-cell { opacity: 1; pointer-events: auto; }
+            
             .action-cell { position: absolute; right: 10px; top: 10px; width: auto; opacity: 0; pointer-events: none;}
             .list-container.edit-mode .action-cell { opacity: 1; pointer-events: auto; }
+            
             .col-date { font-size: 0.85rem; color: #666; }
             .col-content { width: 100%; white-space: normal; }
         }
