@@ -1,463 +1,534 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="ko">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>傳道整理表 1.1.0</title>
+    <title> Discourse dissemination Tracker</title>
     <style>
         :root {
             --primary-green: #43a047;
             --dark-green: #2e7d32;
             --light-green-bg: #f1f8e9;
-            --gradient-start: #66bb6a;
-            --gradient-end: #a8e063;
-            --danger-red: #e53935;
+            --border-color: #c5e1a5;
+            --text-color: #333;
         }
 
         * { box-sizing: border-box; }
 
         body {
-            font-family: "Segoe UI", "Microsoft JhengHei", sans-serif;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
             background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             margin: 0;
             padding: 0;
             min-height: 100vh;
-            color: #333;
+            color: var(--text-color);
         }
 
-        /* --- 導航選單 (Top Left Menu) --- */
+        /* --- 導航列 --- */
         nav {
             background: white;
             padding: 0 20px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.05);
             display: flex;
             align-items: center;
+            justify-content: space-between;
             height: 60px;
             position: sticky;
             top: 0;
             z-index: 100;
         }
 
+        .nav-left { display: flex; align-items: center; }
+
         .nav-title {
             font-weight: bold;
             color: var(--primary-green);
-            margin-right: 30px;
-            font-size: 1.2rem;
+            margin-right: 20px;
+            font-size: 1.1rem;
             display: flex;
             align-items: center;
         }
-        
         .nav-title span { margin-left: 8px; }
 
-        .menu-items {
-            display: flex;
-            gap: 10px;
-        }
+        .menu-items { display: flex; gap: 5px; }
 
         .menu-btn {
             background: transparent;
             border: none;
-            padding: 8px 16px;
+            padding: 6px 12px;
             border-radius: 20px;
             cursor: pointer;
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: #666;
             transition: all 0.3s;
         }
+        .menu-btn.active { background-color: var(--primary-green); color: white; font-weight: bold; }
 
-        .menu-btn.active {
-            background-color: var(--primary-green);
-            color: white;
-            font-weight: bold;
+        /* 語言切換選單 */
+        .lang-switch {
+            position: relative;
+        }
+        .lang-select {
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background: white;
+            font-size: 0.9rem;
+            color: #555;
+            outline: none;
         }
 
-        .menu-btn:hover:not(.active) {
-            background-color: #f1f8e9;
-            color: var(--primary-green);
-        }
-
-        /* --- 主要容器 --- */
+        /* --- 容器 --- */
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 900px;
             margin: 20px auto;
             background: rgba(255, 255, 255, 0.98);
             border-radius: 16px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            padding: 30px;
-            min-height: 500px;
+            padding: 25px;
+            min-height: 600px;
         }
 
-        /* 頁面切換控制 */
-        .page-section {
-            display: none; /* 預設隱藏 */
-            animation: fadeIn 0.4s ease;
-        }
-        .page-section.active-section {
-            display: block; /* 顯示當前頁 */
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .page-section { display: none; animation: fadeIn 0.3s ease; }
+        .page-section.active-section { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         h2 {
             color: var(--dark-green);
-            border-bottom: 3px solid var(--gradient-end);
+            border-bottom: 3px solid #a8e063;
             padding-bottom: 10px;
             margin-top: 0;
         }
 
-        /* --- 表單樣式 --- */
-        .form-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
+        /* --- 表單 --- */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-full-width { grid-column: 1 / -1; }
-
         .form-group { margin-bottom: 5px; }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: var(--dark-green);
-        }
-
-        input, select, textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #c5e1a5;
-            border-radius: 8px;
-            font-size: 16px;
-            outline: none;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            border-color: var(--primary-green);
-            box-shadow: 0 0 0 3px rgba(67, 160, 71, 0.15);
-        }
         
-        input[readonly] {
-            background-color: #f9f9f9;
-            color: #777;
-            cursor: not-allowed;
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--dark-green); font-size: 0.9rem; }
+        input, select, textarea {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color);
+            border-radius: 6px; font-size: 15px; outline: none;
         }
-
-        /* 狀態提示 */
+        input:focus, select:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15); }
+        
         .status-bar {
-            grid-column: 1 / -1;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-            display: none; /* 預設隱藏 */
+            grid-column: 1 / -1; padding: 10px; border-radius: 6px; font-size: 0.9rem; margin-bottom: 10px; display: none;
         }
-        .status-found { background-color: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
-        .status-new { background-color: #fff3e0; color: #ef6c00; border: 1px solid #ffe0b2; }
+        .status-found { background: #e8f5e9; color: #2e7d32; }
+        .status-new { background: #fff3e0; color: #ef6c00; }
 
         button.submit-btn {
-            width: 100%;
-            padding: 16px;
-            margin-top: 20px;
-            background: linear-gradient(to right, #43a047, #66bb6a);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            font-weight: bold;
+            width: 100%; padding: 14px; margin-top: 20px;
+            background: var(--primary-green); color: white; border: none; border-radius: 8px;
+            font-size: 1rem; font-weight: bold; cursor: pointer;
         }
 
-        /* --- 後台工具列 --- */
+        /* --- 後台列表 (Accordion Style) --- */
         .backend-toolbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding: 10px;
-            background-color: #fafafa;
-            border-radius: 8px;
-        }
-
-        .batch-delete-btn {
-            background-color: #ffebee;
-            color: var(--danger-red);
-            border: 1px solid #ffcdd2;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .batch-delete-btn:hover { background-color: #ffcdd2; }
-
-        /* --- 表格樣式 --- */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 15px;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        th {
-            background-color: #66bb6a;
-            color: white;
-            white-space: nowrap;
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 15px; padding: 10px; background: #fafafa; border-radius: 8px; flex-wrap: wrap; gap: 10px;
         }
         
-        /* Checkbox 欄位寬度 */
-        th.check-col, td.check-col { width: 40px; text-align: center; }
-        input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; }
-
-        .tag {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: white;
+        .toolbar-left { display: flex; align-items: center; gap: 15px; font-size: 0.95rem; font-weight: bold; color: #555; }
+        
+        .delete-btn {
+            background: #ffebee; color: #c62828; border: 1px solid #ffcdd2;
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
         }
-        .tag-me { background-color: #26a69a; }
-        .tag-other { background-color: #ef5350; }
 
-        /* --- RWD 手機版 --- */
-        @media (max-width: 768px) {
-            .container { margin: 10px auto; padding: 20px; width: 95%; }
+        /* 列表標題列 (Sort headers) */
+        .list-header-row {
+            display: grid;
+            grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr; /* Check, ID, Name, Date, Content */
+            padding: 10px 15px;
+            background: var(--primary-green);
+            color: white;
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            margin-top: 10px;
+        }
+        
+        .sortable { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 5px; }
+        .sortable:hover { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+        /* 使用者區塊 (Card) */
+        .user-card {
+            border: 1px solid #eee; border-top: none; background: white;
+            transition: all 0.2s;
+        }
+        .user-card:last-child { border-radius: 0 0 8px 8px; }
+
+        /* 1. 摘要行 (Summary Row - Latest Info) */
+        .user-summary {
+            display: grid;
+            grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr;
+            padding: 15px;
+            cursor: pointer;
+            align-items: center;
+        }
+        .user-summary:hover { background: #f9fbe7; }
+        .user-summary.expanded { background: #f1f8e9; border-bottom: 1px dashed #ccc; }
+
+        /* 2. 詳細區塊 (Details - Expandable) */
+        .user-details {
+            display: none;
+            padding: 10px 20px 20px 60px;
+            background: #fdfdfd;
+        }
+        .user-details.show { display: block; }
+
+        /* 詳細資料表格 */
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        .detail-table th { text-align: left; color: #888; border-bottom: 1px solid #eee; padding: 8px; }
+        .detail-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
+        
+        .date-cell { 
+            cursor: pointer; color: #1565c0; font-weight: bold; 
+            border: 1px dashed transparent; padding: 2px 5px; border-radius: 4px;
+        }
+        .date-cell:hover { border-color: #90caf9; background: #e3f2fd; }
+
+        /* Tags */
+        .tag { padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; color: white; display: inline-block; }
+        .tag-me { background: #26a69a; }
+        .tag-other { background: #ef5350; }
+
+        /* RWD */
+        @media (max-width: 700px) {
+            .container { padding: 15px; margin: 10px auto; width: 96%; }
             .form-grid { grid-template-columns: 1fr; }
+            .nav-title span { display: none; }
             
-            /* 手機版表格轉卡片 */
-            table, thead, tbody, th, td, tr { display: block; }
-            thead { display: none; }
-            tr {
-                background: white;
-                border: 1px solid #e0e0e0;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            .list-header-row { display: none; }
+            
+            .user-summary {
+                grid-template-columns: 40px 1fr;
                 position: relative;
-                padding-left: 40px; /* 留給 checkbox 的空間 */
             }
+            
+            .summary-info { display: flex; flex-direction: column; gap: 4px; }
+            .summary-date { font-size: 0.85rem; color: #666; }
+            .summary-preview { font-size: 0.9rem; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-            /* Checkbox 在手機版改為絕對定位在左側 */
-            td.check-col {
-                position: absolute;
-                left: 0;
-                top: 0;
-                bottom: 0;
-                width: 40px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                border-right: 1px solid #f0f0f0;
-                background-color: #fafafa;
-                border-bottom: none;
-            }
-
-            td:not(.check-col) {
-                padding: 10px 15px;
-                text-align: right;
-                display: flex;
-                justify-content: flex-end;
-                align-items: center;
-                border-bottom: 1px solid #f5f5f5;
-            }
-
-            td:not(.check-col)::before {
-                content: attr(data-label);
-                position: absolute;
-                left: 50px; /* 避開 checkbox */
-                font-weight: bold;
-                color: var(--dark-green);
-            }
-
-            td[data-label="內容"] {
-                display: block;
-                text-align: left;
-                padding-top: 35px;
-            }
-            td[data-label="內容"]::before { top: 10px; }
+            .user-details { padding: 10px; }
         }
     </style>
 </head>
 <body>
 
 <nav>
-    <div class="nav-title">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary-green)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
-        <span>傳道整理系統</span>
+    <div class="nav-left">
+        <div class="nav-title">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary-green)">
+                <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 5.5V19c0 .55.45 1 1 1 1.11-.35 2.33-.5 3.5-.5 1.95 0 4.05.4 5.5 1.5 1.45-1.1 3.55-1.5 5.5-1.5 1.17 0 2.39.15 3.5.5.55 0 1-.45 1-1V5c0-.55-.45-1-1-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
+            </svg>
+            <span id="txt-app-title">전도 관리 시스템</span>
+        </div>
+        <div class="menu-items">
+            <button class="menu-btn active" onclick="switchPage('entry')" id="btn-entry">등록</button>
+            <button class="menu-btn" onclick="switchPage('backend')" id="btn-backend">데이터</button>
+        </div>
     </div>
-    <div class="menu-items">
-        <button class="menu-btn active" onclick="switchPage('entry')">傳道登錄</button>
-        <button class="menu-btn" onclick="switchPage('backend')">後台資料</button>
+    
+    <div class="lang-switch">
+        <select class="lang-select" onchange="setLanguage(this.value)">
+            <option value="ko">한국어</option>
+            <option value="zh">中文</option>
+        </select>
     </div>
 </nav>
 
 <div class="container">
 
     <div id="entrySection" class="page-section active-section">
-        <h2>傳道登錄表</h2>
-        
+        <h2 id="txt-entry-header">전도 섭외자 등록</h2>
         <div id="statusMsg" class="status-bar"></div>
 
         <div class="form-grid">
             <div class="form-group">
-                <label for="idInput">編號</label>
-                <input type="text" id="idInput" placeholder="輸入編號 (例: 0001)" oninput="handleIdInput()">
+                <label id="lbl-id">번호</label>
+                <input type="text" id="idInput" placeholder="9999" oninput="handleIdInput()">
             </div>
 
             <div class="form-group">
-                <label for="nameInput">姓名</label>
-                <input type="text" id="nameInput" placeholder="輸入姓名 (例: 良丞)" oninput="handleNameInput()">
+                <label id="lbl-name">이름</label>
+                <input type="text" id="nameInput" placeholder="이름 입력" oninput="handleNameInput()">
             </div>
 
             <div class="form-group">
-                <label for="recordDate">日期</label>
+                <label id="lbl-date">날짜</label>
                 <input type="date" id="recordDate">
             </div>
 
             <div class="form-group">
-                <label for="replyType">回覆類型</label>
+                <label id="lbl-type">회신 유형</label>
                 <select id="replyType">
-                    <option value="我回覆">我回覆</option>
-                    <option value="對方回覆" id="otherReplyOption">對方回覆</option>
+                    <option value="me" id="opt-me">내가 회신</option>
+                    <option value="other" id="opt-other">상대방 회신</option>
                 </select>
             </div>
 
             <div class="form-group form-full-width">
-                <label for="content">回覆內容紀錄</label>
-                <textarea id="content" rows="5" placeholder="請輸入對話重點或備忘..."></textarea>
+                <label id="lbl-content">내용</label>
+                <textarea id="content" rows="5" placeholder="내용을 입력하세요..."></textarea>
             </div>
         </div>
         
-        <button class="submit-btn" onclick="submitData()">登錄資料</button>
+        <button class="submit-btn" onclick="submitData()" id="btn-submit">등록하기</button>
     </div>
 
     <div id="backendSection" class="page-section">
-        <h2>後台登錄資料</h2>
+        <h2 id="txt-backend-header">데이터 관리</h2>
         
         <div class="backend-toolbar">
-            <span style="font-size: 0.9rem; color: #666;">
-                <input type="checkbox" id="selectAll" onclick="toggleSelectAll()"> 全選 / 取消
-            </span>
-            <button class="batch-delete-btn" onclick="deleteSelected()">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
-                刪除選取項目
+            <div class="toolbar-left">
+                <label style="display:flex; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="width:18px; height:18px; margin-right:8px;">
+                    <span id="txt-select-all">전체 선택</span>
+                </label>
+                <span style="color:#aaa;">|</span>
+                <span id="txt-total-count">섭외자: 0명</span>
+            </div>
+            <button class="delete-btn" onclick="deleteSelected()" id="btn-delete">
+                선택 항목 삭제
             </button>
         </div>
 
-        <table id="dataTable">
-            <thead>
-                <tr>
-                    <th class="check-col"></th> <th width="10%">編號</th>
-                    <th width="15%">姓名</th>
-                    <th width="15%">日期</th>
-                    <th width="15%">類型</th>
-                    <th width="45%">內容</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                </tbody>
-        </table>
+        <div class="list-container">
+            <div class="list-header-row">
+                <div></div>
+                <div id="col-id">번호</div>
+                <div id="col-name">이름</div>
+                <div class="sortable" onclick="toggleSort()">
+                    <span id="col-date">최근 날짜</span> <span id="sortIcon">▼</span>
+                </div>
+                <div id="col-content">최신 내용</div>
+            </div>
+
+            <div id="dataList"></div>
+        </div>
     </div>
 
 </div>
 
 <script>
-    // --- 資料庫初始化 ---
-    const STORAGE_KEY = 'missionary_data_v3';
-    let db = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    // --- 語言資源 (i18n) ---
+    const i18n = {
+        ko: {
+            appTitle: "전도 관리 시스템",
+            btnEntry: "등록",
+            btnBackend: "데이터",
+            headerEntry: "전도 섭외자 등록", // 變更 1: 標題對應
+            lblId: "번호",
+            lblName: "이름",
+            lblDate: "날짜",
+            lblType: "회신 유형",
+            lblContent: "내용",
+            optMe: "내가 회신",
+            optOther: "상대방 회신",
+            phId: "예: 9999", // 變更 2: 韓文 ID 舉例
+            phName: "예: 김철수",
+            phContent: "대화 내용이나 기도 제목 입력...",
+            btnSubmit: "등록하기",
+            headerBackend: "데이터 관리",
+            txtSelectAll: "전체 선택",
+            txtTotal: "섭외자: ", // 變更 1: 修正為 섭외자
+            txtPerson: "명",
+            btnDelete: "선택 항목 삭제",
+            colId: "번호",
+            colName: "이름",
+            colDate: "최근 날짜",
+            colContent: "최신 내용",
+            statusFound: "✔ 기존 데이터 발견: ",
+            statusNew: "✚ 새로운 번호/이름입니다.",
+            statusNewId: "✚ 새 섭외자! 추천 번호: ", // 對應修改
+            alertIncomplete: "모든 항목을 입력해주세요.",
+            alertUpdate: "업데이트 완료: ",
+            alertCreate: "새 파일 생성 완료: ",
+            alertConfirmDelete: "선택한 섭외자와 모든 기록을 영구적으로 삭제하시겠습니까?",
+            alertDeleted: "삭제되었습니다.",
+            tagMe: "본인",
+            tagOther: "상대",
+            msgEmpty: "(기록 없음)",
+            promptEditDate: "날짜 수정 (YYYY-MM-DD):"
+        },
+        zh: {
+            appTitle: "傳道整理系統",
+            btnEntry: "傳道登錄",
+            btnBackend: "後台資料",
+            headerEntry: "傳道登錄表",
+            lblId: "編號",
+            lblName: "姓名",
+            lblDate: "日期",
+            lblType: "回覆類型",
+            lblContent: "回覆內容",
+            optMe: "我回覆",
+            optOther: "對方回覆",
+            phId: "例: 9999", // 變更 2: 中文 ID 舉例
+            phName: "例: 金大中", // 變更 2: 中文姓名舉例
+            phContent: "請輸入對話重點或備忘...",
+            btnSubmit: "登錄資料",
+            headerBackend: "後台登錄資料",
+            txtSelectAll: "全選 / 取消",
+            txtTotal: "涉外者人數: ",
+            txtPerson: " 人",
+            btnDelete: "刪除選取項目",
+            colId: "編號",
+            colName: "姓名",
+            colDate: "最近日期",
+            colContent: "最新內容",
+            statusFound: "✔ 已找到舊資料：",
+            statusNew: "✚ 這是新的編號，請輸入姓名",
+            statusNewId: "✚ 新朋友！系統建議編號：",
+            alertIncomplete: "請填寫所有欄位",
+            alertUpdate: "已更新資料：",
+            alertCreate: "已建立新檔案：",
+            alertConfirmDelete: "確定要永久刪除這些檔案及其所有紀錄嗎？",
+            alertDeleted: "刪除完成！",
+            tagMe: "我",
+            tagOther: "他",
+            msgEmpty: "(尚無紀錄)",
+            promptEditDate: "修訂日期 (YYYY-MM-DD):"
+        }
+    };
 
-    // 自動遷移舊資料 (相容 v1, v2)
-    if (db.length === 0) {
-        const oldV2 = localStorage.getItem('missionary_data_v2');
-        const oldV1 = localStorage.getItem('missionary_data_v1');
-        if (oldV2) db = JSON.parse(oldV2);
-        else if (oldV1) db = JSON.parse(oldV1);
+    // --- 全域變數 ---
+    let currentLang = localStorage.getItem('app_lang') || 'ko'; 
+    let db = JSON.parse(localStorage.getItem('missionary_data_v4')) || [];
+    let sortDesc = true; 
+
+    // 初始化
+    window.onload = function() {
+        document.querySelector('.lang-select').value = currentLang;
         
-        // 如果完全沒資料，建立預設
         if (db.length === 0) {
-            db.push({ id: '0001', name: '良丞', logs: [] });
+            const oldDB = localStorage.getItem('missionary_data_v3') || localStorage.getItem('missionary_data_v2');
+            if (oldDB) {
+                db = JSON.parse(oldDB);
+                saveData();
+            } else {
+                // 預設一筆測試資料
+                db.push({ id: '0001', name: '良丞 (Yang)', logs: [] }); 
+            }
         }
-        saveData();
+
+        applyLanguage();
+        document.getElementById('recordDate').valueAsDate = new Date();
+        renderBackend();
+    };
+
+    // --- 1. 多語言功能 ---
+    function setLanguage(lang) {
+        currentLang = lang;
+        localStorage.setItem('app_lang', lang);
+        applyLanguage();
+        const nameVal = document.getElementById('nameInput').value;
+        updateReplyOption(nameVal); 
+        renderBackend();
     }
 
-    // 初始化日期
-    document.getElementById('recordDate').valueAsDate = new Date();
-    // 渲染表格
-    renderTable();
+    function applyLanguage() {
+        const t = i18n[currentLang];
+        
+        const map = {
+            'txt-app-title': t.appTitle, 'btn-entry': t.btnEntry, 'btn-backend': t.btnBackend,
+            'txt-entry-header': t.headerEntry, 'lbl-id': t.lblId, 'lbl-name': t.lblName,
+            'lbl-date': t.lblDate, 'lbl-type': t.lblType, 'lbl-content': t.lblContent,
+            'opt-me': t.optMe, 'opt-other': t.optOther, 'btn-submit': t.btnSubmit,
+            'txt-backend-header': t.headerBackend, 'txt-select-all': t.txtSelectAll,
+            'btn-delete': t.btnDelete, 'col-id': t.colId, 'col-name': t.colName,
+            'col-date': t.colDate, 'col-content': t.colContent
+        };
 
-    // --- 變更 1 & 2: 頁面切換 ---
-    function switchPage(pageName) {
-        // 切換按鈕樣式
-        document.querySelectorAll('.menu-btn').forEach(btn => btn.classList.remove('active'));
-        if(pageName === 'entry') document.querySelectorAll('.menu-btn')[0].classList.add('active');
-        else document.querySelectorAll('.menu-btn')[1].classList.add('active');
-
-        // 切換區塊顯示
-        document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active-section'));
-        if(pageName === 'entry') document.getElementById('entrySection').classList.add('active-section');
-        else {
-            document.getElementById('backendSection').classList.add('active-section');
-            renderTable(); // 切換到後台時重新渲染，確保資料最新
+        for (const [id, text] of Object.entries(map)) {
+            const el = document.getElementById(id);
+            if(el) el.textContent = text;
         }
+
+        // Placeholders
+        document.getElementById('idInput').placeholder = t.phId;
+        document.getElementById('nameInput').placeholder = t.phName;
+        document.getElementById('content').placeholder = t.phContent;
+        
+        updateCounter();
     }
 
-    // --- 變更 1 & 2: 雙向聯動邏輯 ---
-    
-    // 輸入編號 -> 找名字
+    // --- 2. 登錄頁邏輯 ---
     function handleIdInput() {
+        const t = i18n[currentLang];
         const idVal = document.getElementById('idInput').value.trim();
         const user = db.find(u => u.id === idVal);
         
-        const nameInput = document.getElementById('nameInput');
-        const statusMsg = document.getElementById('statusMsg');
-        
         if (user) {
-            nameInput.value = user.name; // 自動填入名字
-            showStatus(`✔ 已找到舊資料：${user.name}`, 'found');
-            updateReplyOption(user.name); // 變更 4
+            document.getElementById('nameInput').value = user.name;
+            showStatus(t.statusFound + user.name, 'found');
+            updateReplyOption(user.name);
         } else {
-            // 如果編號不存在，不要清空名字（可能是新編號），但重置狀態
-            if(idVal.length >= 4) {
-                 showStatus(`✚ 這是新的編號，請輸入姓名以建立檔案`, 'new');
-            } else {
-                 statusMsg.style.display = 'none';
+            if(idVal.length >= 4) showStatus(t.statusNew, 'new');
+            else document.getElementById('statusMsg').style.display = 'none';
+            updateReplyOption(null);
+        }
+    }
+
+    function handleNameInput() {
+        const t = i18n[currentLang];
+        const nameVal = document.getElementById('nameInput').value.trim();
+        const user = db.find(u => u.name === nameVal);
+
+        if (user) {
+            document.getElementById('idInput').value = user.id;
+            showStatus(t.statusFound + user.id, 'found');
+            updateReplyOption(user.name);
+        } else {
+            if (document.getElementById('idInput').value === '') {
+                const newId = generateNewId();
+                showStatus(t.statusNewId + newId, 'new');
+                document.getElementById('idInput').value = newId; 
             }
             updateReplyOption(null);
         }
     }
 
-    // 輸入名字 -> 找編號
-    function handleNameInput() {
-        const nameVal = document.getElementById('nameInput').value.trim();
-        const user = db.find(u => u.name === nameVal);
+    function updateReplyOption(name) {
+        const t = i18n[currentLang];
+        const option = document.getElementById('opt-other');
+        if (name) option.textContent = `${t.optOther} (${name})`;
+        else option.textContent = t.optOther;
+    }
 
-        const idInput = document.getElementById('idInput');
-        
-        if (user) {
-            idInput.value = user.id; // 自動填入編號
-            showStatus(`✔ 已找到舊資料：編號 ${user.id}`, 'found');
-            updateReplyOption(user.name); // 變更 4
-        } else {
-            // 新名字 -> 自動生成新編號 (顯示但不鎖死，允許使用者修改)
-            // 只有當編號欄位是空的，才自動配號，避免干擾手動輸入
-            if (idInput.value === '') {
-                const newId = generateNewId();
-                showStatus(`✚ 新朋友！系統建議編號：${newId}`, 'new');
-                // 這裡選擇不直接填入 input，改為提示，或者您可以選擇直接填入:
-                idInput.value = newId; 
-            }
-            updateReplyOption(null);
+    function submitData() {
+        const t = i18n[currentLang];
+        const id = document.getElementById('idInput').value.trim();
+        const name = document.getElementById('nameInput').value.trim();
+        const date = document.getElementById('recordDate').value;
+        const typeSelect = document.getElementById('replyType').value;
+        const content = document.getElementById('content').value.trim();
+
+        if (!id || !name || !date || !content) {
+            alert(t.alertIncomplete);
+            return;
         }
+
+        let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
+
+        let user = db.find(u => u.id === id);
+        if (user) {
+            user.name = name;
+            user.logs.push({ date, type: typeLabel, content });
+            alert(t.alertUpdate + name);
+        } else {
+            db.push({
+                id: id, name: name,
+                logs: [{ date, type: typeLabel, content }]
+            });
+            alert(t.alertCreate + name);
+        }
+
+        saveData();
+        renderBackend();
+        document.getElementById('content').value = '';
     }
 
     function showStatus(msg, type) {
@@ -467,176 +538,194 @@
         el.style.display = 'block';
     }
 
-    // --- 變更 4: 更新「對方回覆」的文字 ---
-    function updateReplyOption(name) {
-        const option = document.getElementById('otherReplyOption');
-        if (name) {
-            option.textContent = `對方回覆 (${name})`;
-        } else {
-            option.textContent = `對方回覆`;
-        }
+    // --- 3. 後台邏輯 ---
+    
+    function toggleSort() {
+        sortDesc = !sortDesc;
+        document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲';
+        renderBackend();
     }
 
-    // --- 資料提交 ---
-    function submitData() {
-        const id = document.getElementById('idInput').value.trim();
-        const name = document.getElementById('nameInput').value.trim();
-        const date = document.getElementById('recordDate').value;
-        const typeRaw = document.getElementById('replyType').value;
-        const content = document.getElementById('content').value.trim();
+    function renderBackend() {
+        const t = i18n[currentLang];
+        const listContainer = document.getElementById('dataList');
+        listContainer.innerHTML = '';
 
-        if (!id || !name || !date || !content) {
-            alert("請填寫所有欄位");
-            return;
-        }
-
-        // 處理類型文字 (如果選的是「對方回覆」，儲存時存入「對方回覆 (Name)」或單純「對方回覆」)
-        let finalType = typeRaw;
-        if (typeRaw === '對方回覆' && name) {
-            // 檢查是否已經包含了名字，如果 select 本身已經變了
-            const optionText = document.getElementById('otherReplyOption').textContent;
-            // 為了資料庫乾淨，我們存 "對方回覆" 加上名字，或者前端顯示時再加?
-            // 需求說「帶入對方姓名」，這裡直接存進去比較直觀
-            finalType = `對方回覆 (${name})`;
-        }
-
-        let user = db.find(u => u.id === id);
-
-        if (user) {
-            // ID 存在，檢查名字是否相符
-            if (user.name !== name) {
-                if(!confirm(`編號 ${id} 原本是 ${user.name}，您確定要改成 ${name} 嗎？`)) return;
-                user.name = name; // 更新名字
-            }
-            user.logs.push({ date, type: finalType, content });
-            alert(`已更新 ${name} 的資料`);
-        } else {
-            // 新 ID
-            // 再次檢查名字是否已被其他 ID 使用
-            const nameExist = db.find(u => u.name === name);
-            if (nameExist) {
-                alert(`錯誤：${name} 已經存在於編號 ${nameExist.id}，請確認。`);
-                return;
-            }
-
-            db.push({
-                id: id,
-                name: name,
-                logs: [{ date, type: finalType, content }]
-            });
-            alert(`已建立新檔案：${name} (${id})`);
-        }
-
-        saveData();
-        resetForm();
-    }
-
-    // --- 變更 3: 後台表格與批次刪除 ---
-    function renderTable() {
-        const tbody = document.getElementById('tableBody');
-        tbody.innerHTML = '';
-
-        // 排序：新 ID 在前
-        const sortedDb = [...db].sort((a, b) => b.id - a.id);
-
-        sortedDb.forEach(user => {
-            // 如果無紀錄
-            if (!user.logs || user.logs.length === 0) {
-                tbody.appendChild(createRow(user.id, user.name, '', '', '(尚無紀錄)', user.id));
-                return;
-            }
-
-            // 日期新到舊
-            const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
-            
-            sortedLogs.forEach((log) => {
-                // 每一行都帶有 user.id 作為 value，方便刪除邏輯辨識
-                // 注意：這裡的刪除邏輯是「選取某行紀錄」還是「選取這個人」？
-                // 根據需求「刪除的選項功能更變...點選刪除後彈出選單」，通常指刪除該筆用戶資料。
-                // 為了簡化，這裡 checkbox 代表「選取這個人(編號)」。
-                // 所以多行紀錄如果是同一個人，checkbox value 是一樣的。
-                
-                tbody.appendChild(createRow(user.id, user.name, log.date, log.type, log.content, user.id));
-            });
+        const processedUsers = db.map(user => {
+            user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+            const lastLog = user.logs[0] || { date: '0000-00-00', content: t.msgEmpty };
+            return { ...user, lastLog };
         });
+
+        processedUsers.sort((a, b) => {
+            const dA = new Date(a.lastLog.date);
+            const dB = new Date(b.lastLog.date);
+            return sortDesc ? (dB - dA) : (dA - dB);
+        });
+
+        processedUsers.forEach(user => {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+
+            const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
+            
+            const summaryHtml = `
+                <div class="user-summary" onclick="toggleDetails('${user.id}')">
+                    <div onclick="event.stopPropagation()">
+                        <input type="checkbox" name="selectUser" value="${user.id}">
+                    </div>
+                    
+                    <div class="summary-info" style="display:contents">
+                        <div style="font-weight:bold; color:#666;">${user.id}</div>
+                        <div style="font-weight:bold; font-size:1.05rem;">${user.name}</div>
+                        <div class="summary-date" style="color:#2e7d32;">${displayDate}</div>
+                        <div class="summary-preview">${user.lastLog.content}</div>
+                    </div>
+                </div>
+            `;
+
+            let logsHtml = '';
+            user.logs.forEach((log, idx) => {
+                const typeText = log.type === 'me' ? t.tagMe : t.tagOther;
+                const typeClass = log.type === 'me' ? 'tag-me' : 'tag-other';
+                
+                logsHtml += `
+                    <tr>
+                        <td width="120">
+                            <span class="date-cell" onclick="editDate('${user.id}', ${idx}, this)">${log.date}</span>
+                        </td>
+                        <td width="80"><span class="tag ${typeClass}">${typeText}</span></td>
+                        <td>${log.content}</td>
+                    </tr>
+                `;
+            });
+
+            const detailsHtml = `
+                <div class="user-details" id="details-${user.id}">
+                    <table class="detail-table">
+                        ${logsHtml}
+                    </table>
+                </div>
+            `;
+
+            card.innerHTML = summaryHtml + detailsHtml;
+            listContainer.appendChild(card);
+        });
+
+        updateCounter();
     }
 
-    function createRow(id, name, date, type, content, uniqueValue) {
-        const tr = document.createElement('tr');
+    function toggleDetails(uid) {
+        const details = document.getElementById(`details-${uid}`);
+        const summary = details.previousElementSibling;
         
-        let typeClass = 'tag-other';
-        if (type === '我回覆') typeClass = 'tag-me';
-        
-        const typeHtml = type ? `<span class="tag ${typeClass}">${type}</span>` : '';
-
-        // Checkbox: 具有相同的 name="selectUser"，value 為 ID
-        tr.innerHTML = `
-            <td class="check-col">
-                <input type="checkbox" name="selectUser" value="${uniqueValue}">
-            </td>
-            <td data-label="編號">${id}</td>
-            <td data-label="姓名"><strong>${name}</strong></td>
-            <td data-label="日期">${date}</td>
-            <td data-label="類型">${typeHtml}</td>
-            <td data-label="內容">${content}</td>
-        `;
-        return tr;
+        if (details.style.display === 'block') {
+            details.style.display = 'none';
+            summary.classList.remove('expanded');
+        } else {
+            details.style.display = 'block';
+            summary.classList.add('expanded');
+        }
     }
 
-    // 全選/取消全選
+    function editDate(uid, logIndex, spanEl) {
+        if (spanEl.querySelector('input')) return;
+
+        const originalDate = spanEl.innerText;
+        const input = document.createElement('input');
+        input.type = 'date';
+        input.value = originalDate;
+        input.style.padding = '2px';
+        input.style.fontSize = '0.9rem';
+
+        spanEl.innerHTML = '';
+        spanEl.appendChild(input);
+        input.focus();
+
+        const saveEdit = () => {
+            const newDate = input.value;
+            if (newDate && newDate !== originalDate) {
+                const user = db.find(u => u.id === uid);
+                if (user) {
+                    user.logs[logIndex].date = newDate;
+                    saveData();
+                    renderBackend();
+                    
+                    setTimeout(() => {
+                        const d = document.getElementById(`details-${uid}`);
+                        if(d) {
+                            d.style.display = 'block';
+                            d.previousElementSibling.classList.add('expanded');
+                        }
+                    }, 50);
+                }
+            } else {
+                spanEl.innerHTML = originalDate;
+            }
+        };
+
+        input.onblur = saveEdit;
+        input.onkeypress = (e) => { if(e.key === 'Enter') input.blur(); };
+        input.onclick = (e) => e.stopPropagation(); 
+    }
+
+    function updateCounter() {
+        const t = i18n[currentLang];
+        const count = db.length;
+        document.getElementById('txt-total-count').textContent = t.txtTotal + count + t.txtPerson;
+    }
+
     function toggleSelectAll() {
         const mainCheck = document.getElementById('selectAll');
-        const checkboxes = document.getElementsByName('selectUser');
-        checkboxes.forEach(cb => cb.checked = mainCheck.checked);
+        const checks = document.getElementsByName('selectUser');
+        checks.forEach(c => c.checked = mainCheck.checked);
     }
 
-    // 執行批次刪除
     function deleteSelected() {
-        const checkboxes = document.getElementsByName('selectUser');
-        const selectedIds = new Set(); // 使用 Set 避免同一個人多筆紀錄被重複計算
-        
-        checkboxes.forEach(cb => {
-            if (cb.checked) selectedIds.add(cb.value);
-        });
+        const t = i18n[currentLang];
+        const checks = document.getElementsByName('selectUser');
+        const toDelete = [];
+        checks.forEach(c => { if(c.checked) toDelete.push(c.value); });
 
-        if (selectedIds.size === 0) {
-            alert("請先勾選要刪除的項目！");
-            return;
-        }
+        if (toDelete.length === 0) return;
 
-        // 彈出確認選單
-        const confirmMsg = `您選取了 ${selectedIds.size} 位傳道對象（編號: ${Array.from(selectedIds).join(', ')}）。\n\n確定要「永久刪除」這些檔案及其所有紀錄嗎？`;
-        
-        if (confirm(confirmMsg)) {
-            // 執行刪除
-            db = db.filter(user => !selectedIds.has(user.id));
+        if (confirm(t.alertConfirmDelete)) {
+            db = db.filter(u => !toDelete.includes(u.id));
             saveData();
-            renderTable(); // 重繪表格
-            document.getElementById('selectAll').checked = false; // 重置全選紐
-            alert("刪除完成！");
+            renderBackend();
+            document.getElementById('selectAll').checked = false;
+            alert(t.alertDeleted);
             
-            // 如果剛好刪到正在輸入的，重置表單
-            handleIdInput();
+            if (toDelete.includes(document.getElementById('idInput').value)) {
+                document.getElementById('idInput').value = '';
+                document.getElementById('nameInput').value = '';
+                updateReplyOption(null);
+            }
         }
     }
 
-    // --- 工具函式 ---
+    function switchPage(page) {
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
+        document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+        
+        if (page === 'entry') {
+            document.getElementById('entrySection').classList.add('active-section');
+            document.getElementById('btn-entry').classList.add('active');
+        } else {
+            document.getElementById('backendSection').classList.add('active-section');
+            document.getElementById('btn-backend').classList.add('active');
+            renderBackend();
+        }
+    }
+
     function generateNewId() {
         if (db.length === 0) return '0001';
-        const maxId = db.reduce((max, user) => Math.max(max, parseInt(user.id, 10)), 0);
+        const maxId = db.reduce((max, u) => Math.max(max, parseInt(u.id, 10)), 0);
         return String(maxId + 1).padStart(4, '0');
     }
 
     function saveData() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
-    }
-
-    function resetForm() {
-        document.getElementById('content').value = '';
-        document.getElementById('idInput').value = '';
-        document.getElementById('nameInput').value = '';
-        document.getElementById('statusMsg').style.display = 'none';
-        updateReplyOption(null);
+        localStorage.setItem('missionary_data_v4', JSON.stringify(db));
     }
 </script>
 
