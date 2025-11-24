@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> Discourse dissemination Tracker</title>
+    <title>Discourse dissemination Tracker</title>
     <style>
         :root {
             --primary-green: #43a047;
@@ -11,6 +11,7 @@
             --light-green-bg: #f1f8e9;
             --border-color: #c5e1a5;
             --text-color: #333;
+            --danger-red: #e53935;
         }
 
         * { box-sizing: border-box; }
@@ -64,10 +65,6 @@
         }
         .menu-btn.active { background-color: var(--primary-green); color: white; font-weight: bold; }
 
-        /* 語言切換選單 */
-        .lang-switch {
-            position: relative;
-        }
         .lang-select {
             padding: 5px 10px;
             border-radius: 5px;
@@ -125,94 +122,127 @@
             font-size: 1rem; font-weight: bold; cursor: pointer;
         }
 
-        /* --- 後台列表 (Accordion Style) --- */
+        /* --- 後台列表 --- */
         .backend-toolbar {
             display: flex; justify-content: space-between; align-items: center;
             margin-bottom: 15px; padding: 10px; background: #fafafa; border-radius: 8px; flex-wrap: wrap; gap: 10px;
+            min-height: 50px;
         }
         
         .toolbar-left { display: flex; align-items: center; gap: 15px; font-size: 0.95rem; font-weight: bold; color: #555; }
         
+        /* 編輯模式控制項 */
+        .edit-controls { display: none; align-items: center; gap: 10px; }
+        .show-edit .edit-controls { display: flex; } /* 顯示編輯控制項 */
+        
+        .toggle-edit-btn {
+            background: #2196f3; color: white; border: none; padding: 8px 16px; 
+            border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
+            transition: background 0.3s;
+        }
+        .toggle-edit-btn.editing { background: var(--primary-green); }
+
         .delete-btn {
             background: #ffebee; color: #c62828; border: 1px solid #ffcdd2;
             padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
         }
 
-        /* 列表標題列 (Sort headers) */
-        .list-header-row {
+        /* 列表 Grid 定義：統一寬度 */
+        /* 40px(Check) | 0.8fr(ID) | 1fr(Name/Type) | 1.2fr(Date) | 1.5fr(Content) | 40px(Action) */
+        .grid-row {
             display: grid;
-            grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr; /* Check, ID, Name, Date, Content */
-            padding: 10px 15px;
-            background: var(--primary-green);
-            color: white;
-            font-weight: bold;
-            border-radius: 8px 8px 0 0;
-            margin-top: 10px;
+            grid-template-columns: 0px 0.8fr 1fr 1.2fr 1.5fr 0px; /* 預設 Checkbox 和 Action 隱藏 (寬度0) */
+            align-items: center;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+
+        /* 編輯模式下展開欄位 */
+        .list-container.edit-mode .grid-row {
+            grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr 40px; 
+        }
+
+        /* 標題列 */
+        .list-header-row {
+            background: var(--primary-green); color: white; font-weight: bold;
+            border-radius: 8px 8px 0 0; margin-top: 10px;
+            padding: 10px 15px; /* 覆寫 grid-row padding 以匹配 */
         }
         
         .sortable { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 5px; }
-        .sortable:hover { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-        /* 使用者區塊 (Card) */
-        .user-card {
-            border: 1px solid #eee; border-top: none; background: white;
-            transition: all 0.2s;
-        }
+        /* 使用者卡片 */
+        .user-card { border: 1px solid #eee; border-top: none; background: white; }
         .user-card:last-child { border-radius: 0 0 8px 8px; }
 
-        /* 1. 摘要行 (Summary Row - Latest Info) */
-        .user-summary {
-            display: grid;
-            grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr;
-            padding: 15px;
-            cursor: pointer;
-            align-items: center;
-        }
+        /* 摘要行 */
+        .user-summary { cursor: pointer; font-size: 1rem; }
         .user-summary:hover { background: #f9fbe7; }
-        .user-summary.expanded { background: #f1f8e9; border-bottom: 1px dashed #ccc; }
+        .user-summary.expanded { background: #f1f8e9; border-bottom: 1px solid #e0e0e0; }
 
-        /* 2. 詳細區塊 (Details - Expandable) */
-        .user-details {
-            display: none;
-            padding: 10px 20px 20px 60px;
-            background: #fdfdfd;
-        }
+        /* 詳細資料區塊 - 現在也是 Grid */
+        .user-details { display: none; background: #fafafa; }
         .user-details.show { display: block; }
 
-        /* 詳細資料表格 */
-        .detail-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .detail-table th { text-align: left; color: #888; border-bottom: 1px solid #eee; padding: 8px; }
-        .detail-table td { border-bottom: 1px solid #eee; padding: 8px; vertical-align: top; }
-        
-        .date-cell { 
-            cursor: pointer; color: #1565c0; font-weight: bold; 
-            border: 1px dashed transparent; padding: 2px 5px; border-radius: 4px;
+        .detail-row {
+            border-bottom: 1px solid #eee;
+            background: #fff;
+            color: #555;
+            font-size: 1rem; /* 與上方字體一致 */
         }
-        .date-cell:hover { border-color: #90caf9; background: #e3f2fd; }
+        .detail-row:last-child { border-bottom: none; }
+
+        /* 隱藏元素與動畫 */
+        .check-cell { overflow: hidden; white-space: nowrap; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .list-container.edit-mode .check-cell { opacity: 1; }
+
+        .action-cell { overflow: hidden; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
+        .list-container.edit-mode .action-cell { opacity: 1; }
+
+        /* 編輯中的欄位 */
+        .editable { cursor: default; }
+        .list-container.edit-mode .editable { 
+            cursor: pointer; border: 1px dashed #ccc; border-radius: 4px; padding: 2px 4px; background: #fff;
+        }
+        .list-container.edit-mode .editable:hover { border-color: #2196f3; background: #e3f2fd; }
+
+        /* 刪除小按鈕 (X) */
+        .btn-remove-log {
+            background: #ffcdd2; color: #b71c1c; border: none; width: 24px; height: 24px;
+            border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
+        }
 
         /* Tags */
-        .tag { padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; color: white; display: inline-block; }
+        .tag { padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; color: white; display: inline-block; }
         .tag-me { background: #26a69a; }
         .tag-other { background: #ef5350; }
 
-        /* RWD */
+        /* RWD 手機版 */
         @media (max-width: 700px) {
             .container { padding: 15px; margin: 10px auto; width: 96%; }
             .form-grid { grid-template-columns: 1fr; }
             .nav-title span { display: none; }
             
-            .list-header-row { display: none; }
+            .list-header-row { display: none; } /* 手機版隱藏表頭 */
             
-            .user-summary {
-                grid-template-columns: 40px 1fr;
-                position: relative;
+            /* 手機版不使用 Grid，改用 Flex 堆疊，但保留編輯模式邏輯 */
+            .grid-row, .list-container.edit-mode .grid-row {
+                display: flex; flex-direction: column; align-items: flex-start; gap: 5px; position: relative;
+                padding-left: 15px;
             }
-            
-            .summary-info { display: flex; flex-direction: column; gap: 4px; }
-            .summary-date { font-size: 0.85rem; color: #666; }
-            .summary-preview { font-size: 0.9rem; color: #444; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-            .user-details { padding: 10px; }
+            /* 編輯模式下，Checkbox 絕對定位 */
+            .list-container.edit-mode .grid-row { padding-left: 45px; } /* 留空間給 checkbox */
+            
+            .check-cell { position: absolute; left: 10px; top: 15px; width: auto; opacity: 0; pointer-events: none;}
+            .list-container.edit-mode .check-cell { opacity: 1; pointer-events: auto; }
+
+            .action-cell { position: absolute; right: 10px; top: 10px; width: auto; opacity: 0; pointer-events: none;}
+            .list-container.edit-mode .action-cell { opacity: 1; pointer-events: auto; }
+
+            /* 手機版內容調整 */
+            .col-date { font-size: 0.85rem; color: #666; }
+            .col-content { width: 100%; white-space: normal; }
         }
     </style>
 </head>
@@ -284,28 +314,34 @@
         
         <div class="backend-toolbar">
             <div class="toolbar-left">
-                <label style="display:flex; align-items:center; cursor:pointer;">
-                    <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="width:18px; height:18px; margin-right:8px;">
-                    <span id="txt-select-all">전체 선택</span>
-                </label>
-                <span style="color:#aaa;">|</span>
                 <span id="txt-total-count">섭외자: 0명</span>
+                
+                <div class="edit-controls" id="editControls">
+                    <span style="color:#aaa;">|</span>
+                    <label style="display:flex; align-items:center; cursor:pointer;">
+                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="width:18px; height:18px; margin-right:5px;">
+                        <span id="txt-select-all">전체 선택</span>
+                    </label>
+                    <button class="delete-btn" onclick="deleteSelected()" id="btn-delete">
+                        선택 삭제
+                    </button>
+                </div>
             </div>
-            <button class="delete-btn" onclick="deleteSelected()" id="btn-delete">
-                선택 항목 삭제
+            
+            <button class="toggle-edit-btn" onclick="toggleEditMode()" id="btn-toggle-edit">
+                편집
             </button>
         </div>
 
-        <div class="list-container">
-            <div class="list-header-row">
-                <div></div>
-                <div id="col-id">번호</div>
+        <div class="list-container" id="dataListContainer">
+            <div class="list-header-row grid-row">
+                <div class="check-cell"></div> <div id="col-id">번호</div>
                 <div id="col-name">이름</div>
                 <div class="sortable" onclick="toggleSort()">
                     <span id="col-date">최근 날짜</span> <span id="sortIcon">▼</span>
                 </div>
                 <div id="col-content">최신 내용</div>
-            </div>
+                <div class="action-cell"></div> </div>
 
             <div id="dataList"></div>
         </div>
@@ -320,7 +356,7 @@
             appTitle: "전도 관리 시스템",
             btnEntry: "등록",
             btnBackend: "데이터",
-            headerEntry: "전도 섭외자 등록", // 變更 1: 標題對應
+            headerEntry: "전도 섭외자 등록",
             lblId: "번호",
             lblName: "이름",
             lblDate: "날짜",
@@ -328,31 +364,33 @@
             lblContent: "내용",
             optMe: "내가 회신",
             optOther: "상대방 회신",
-            phId: "예: 9999", // 變更 2: 韓文 ID 舉例
+            phId: "예: 9999",
             phName: "예: 김철수",
             phContent: "대화 내용이나 기도 제목 입력...",
             btnSubmit: "등록하기",
             headerBackend: "데이터 관리",
             txtSelectAll: "전체 선택",
-            txtTotal: "섭외자: ", // 變更 1: 修正為 섭외자
+            txtTotal: "섭외자: ",
             txtPerson: "명",
-            btnDelete: "선택 항목 삭제",
+            btnDelete: "선택 삭제",
+            btnEdit: "편집",
+            btnDone: "완료",
             colId: "번호",
             colName: "이름",
             colDate: "최근 날짜",
             colContent: "최신 내용",
             statusFound: "✔ 기존 데이터 발견: ",
             statusNew: "✚ 새로운 번호/이름입니다.",
-            statusNewId: "✚ 새 섭외자! 추천 번호: ", // 對應修改
+            statusNewId: "✚ 새 섭외자! 추천 번호: ",
             alertIncomplete: "모든 항목을 입력해주세요.",
             alertUpdate: "업데이트 완료: ",
             alertCreate: "새 파일 생성 완료: ",
             alertConfirmDelete: "선택한 섭외자와 모든 기록을 영구적으로 삭제하시겠습니까?",
             alertDeleted: "삭제되었습니다.",
+            alertDeleteLog: "이 기록을 삭제하시겠습니까?",
             tagMe: "본인",
             tagOther: "상대",
             msgEmpty: "(기록 없음)",
-            promptEditDate: "날짜 수정 (YYYY-MM-DD):"
         },
         zh: {
             appTitle: "傳道整理系統",
@@ -366,15 +404,17 @@
             lblContent: "回覆內容",
             optMe: "我回覆",
             optOther: "對方回覆",
-            phId: "例: 9999", // 變更 2: 中文 ID 舉例
-            phName: "例: 金大中", // 變更 2: 中文姓名舉例
+            phId: "例: 9999",
+            phName: "例: 金大中",
             phContent: "請輸入對話重點或備忘...",
             btnSubmit: "登錄資料",
             headerBackend: "後台登錄資料",
-            txtSelectAll: "全選 / 取消",
+            txtSelectAll: "全選",
             txtTotal: "涉外者人數: ",
             txtPerson: " 人",
-            btnDelete: "刪除選取項目",
+            btnDelete: "刪除選取",
+            btnEdit: "編輯",
+            btnDone: "完成",
             colId: "編號",
             colName: "姓名",
             colDate: "最近日期",
@@ -387,10 +427,10 @@
             alertCreate: "已建立新檔案：",
             alertConfirmDelete: "確定要永久刪除這些檔案及其所有紀錄嗎？",
             alertDeleted: "刪除完成！",
+            alertDeleteLog: "確定要刪除這條紀錄嗎？",
             tagMe: "我",
             tagOther: "他",
             msgEmpty: "(尚無紀錄)",
-            promptEditDate: "修訂日期 (YYYY-MM-DD):"
         }
     };
 
@@ -398,6 +438,7 @@
     let currentLang = localStorage.getItem('app_lang') || 'ko'; 
     let db = JSON.parse(localStorage.getItem('missionary_data_v4')) || [];
     let sortDesc = true; 
+    let isEditMode = false; // 編輯模式狀態
 
     // 初始化
     window.onload = function() {
@@ -409,7 +450,6 @@
                 db = JSON.parse(oldDB);
                 saveData();
             } else {
-                // 預設一筆測試資料
                 db.push({ id: '0001', name: '良丞 (Yang)', logs: [] }); 
             }
         }
@@ -447,7 +487,10 @@
             if(el) el.textContent = text;
         }
 
-        // Placeholders
+        // 更新編輯按鈕文字
+        const editBtn = document.getElementById('btn-toggle-edit');
+        if(editBtn) editBtn.textContent = isEditMode ? t.btnDone : t.btnEdit;
+
         document.getElementById('idInput').placeholder = t.phId;
         document.getElementById('nameInput').placeholder = t.phName;
         document.getElementById('content').placeholder = t.phContent;
@@ -455,7 +498,7 @@
         updateCounter();
     }
 
-    // --- 2. 登錄頁邏輯 ---
+    // --- 2. 登錄頁邏輯 (維持不變) ---
     function handleIdInput() {
         const t = i18n[currentLang];
         const idVal = document.getElementById('idInput').value.trim();
@@ -538,8 +581,36 @@
         el.style.display = 'block';
     }
 
-    // --- 3. 後台邏輯 ---
+    // --- 3. 後台邏輯 (含編輯模式) ---
     
+    // 切換編輯模式
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        
+        // 更新 UI 狀態
+        const container = document.getElementById('dataListContainer');
+        const controls = document.getElementById('editControls');
+        const btn = document.getElementById('btn-toggle-edit');
+        const t = i18n[currentLang];
+
+        if (isEditMode) {
+            container.classList.add('edit-mode');
+            controls.style.display = 'flex';
+            btn.textContent = t.btnDone;
+            btn.classList.add('editing');
+        } else {
+            container.classList.remove('edit-mode');
+            controls.style.display = 'none';
+            btn.textContent = t.btnEdit;
+            btn.classList.remove('editing');
+            
+            // 退出時取消全選
+            const checks = document.getElementsByName('selectUser');
+            checks.forEach(c => c.checked = false);
+            document.getElementById('selectAll').checked = false;
+        }
+    }
+
     function toggleSort() {
         sortDesc = !sortDesc;
         document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲';
@@ -569,53 +640,71 @@
 
             const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
             
+            // 摘要行 (Summary Row)
             const summaryHtml = `
-                <div class="user-summary" onclick="toggleDetails('${user.id}')">
-                    <div onclick="event.stopPropagation()">
+                <div class="user-summary grid-row" onclick="toggleDetails('${user.id}')">
+                    <div class="check-cell" onclick="event.stopPropagation()">
                         <input type="checkbox" name="selectUser" value="${user.id}">
                     </div>
                     
-                    <div class="summary-info" style="display:contents">
-                        <div style="font-weight:bold; color:#666;">${user.id}</div>
-                        <div style="font-weight:bold; font-size:1.05rem;">${user.name}</div>
-                        <div class="summary-date" style="color:#2e7d32;">${displayDate}</div>
-                        <div class="summary-preview">${user.lastLog.content}</div>
-                    </div>
+                    <div style="font-weight:bold; color:#666;">${user.id}</div>
+                    <div style="font-weight:bold; font-size:1.05rem;">${user.name}</div>
+                    <div class="col-date editable" style="color:#2e7d32;" onclick="editDate(event, '${user.id}', 0, this)">${displayDate}</div>
+                    <div class="col-content editable" onclick="editContent(event, '${user.id}', 0, this)">${user.lastLog.content}</div>
+                    
+                    <div class="action-cell"></div>
                 </div>
             `;
 
+            // 詳細資料行 (Detail Rows) - 改成 Grid 佈局
             let logsHtml = '';
             user.logs.forEach((log, idx) => {
+                // 跳過第一個 (最新)，因為已顯示在 Summary
+                // 但為了能在展開後編輯所有紀錄，我們通常列出全部，或者摘要行就是最新一行。
+                // 為了邏輯簡單，這裡列出全部歷史紀錄(包含最新)，或者只列出舊的。
+                // 為了讓每條都能單獨刪除，我們列出全部。
+                
                 const typeText = log.type === 'me' ? t.tagMe : t.tagOther;
                 const typeClass = log.type === 'me' ? 'tag-me' : 'tag-other';
                 
+                // 注意：這裡我們使用 grid-row class 讓它跟表頭對齊
                 logsHtml += `
-                    <tr>
-                        <td width="120">
-                            <span class="date-cell" onclick="editDate('${user.id}', ${idx}, this)">${log.date}</span>
-                        </td>
-                        <td width="80"><span class="tag ${typeClass}">${typeText}</span></td>
-                        <td>${log.content}</td>
-                    </tr>
+                    <div class="detail-row grid-row">
+                        <div class="check-cell"></div> <div></div> <div><span class="tag ${typeClass}">${typeText}</span></div>
+                        
+                        <div class="editable" style="color:#1565c0;" onclick="editDate(event, '${user.id}', ${idx}, this)">${log.date}</div>
+                        
+                        <div class="editable" onclick="editContent(event, '${user.id}', ${idx}, this)">${log.content}</div>
+                        
+                        <div class="action-cell">
+                            <button class="btn-remove-log" onclick="deleteSingleLog(event, '${user.id}', ${idx})">✕</button>
+                        </div>
+                    </div>
                 `;
             });
 
             const detailsHtml = `
                 <div class="user-details" id="details-${user.id}">
-                    <table class="detail-table">
-                        ${logsHtml}
-                    </table>
+                    ${logsHtml}
                 </div>
             `;
 
             card.innerHTML = summaryHtml + detailsHtml;
             listContainer.appendChild(card);
         });
+        
+        // 恢復編輯狀態的 UI 顯示 (重新渲染後會不見，需補上)
+        if (isEditMode) {
+            document.getElementById('dataListContainer').classList.add('edit-mode');
+        }
 
         updateCounter();
     }
 
     function toggleDetails(uid) {
+        // 如果正在編輯文字，不觸發收合
+        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
+
         const details = document.getElementById(`details-${uid}`);
         const summary = details.previousElementSibling;
         
@@ -628,45 +717,114 @@
         }
     }
 
-    function editDate(uid, logIndex, spanEl) {
-        if (spanEl.querySelector('input')) return;
+    // 修改日期
+    function editDate(event, uid, logIndex, el) {
+        if (!isEditMode) return; // 非編輯模式不可修改
+        event.stopPropagation(); // 防止觸發 toggleDetails
 
-        const originalDate = spanEl.innerText;
+        if (el.querySelector('input')) return;
+
+        const originalDate = el.innerText;
         const input = document.createElement('input');
         input.type = 'date';
         input.value = originalDate;
-        input.style.padding = '2px';
-        input.style.fontSize = '0.9rem';
-
-        spanEl.innerHTML = '';
-        spanEl.appendChild(input);
+        input.style.width = '100%';
+        
+        el.innerHTML = '';
+        el.appendChild(input);
         input.focus();
 
-        const saveEdit = () => {
+        const save = () => {
             const newDate = input.value;
             if (newDate && newDate !== originalDate) {
                 const user = db.find(u => u.id === uid);
                 if (user) {
+                    // Logs 已經 sort 過，這裡需要小心 index 對應問題
+                    // 簡單解法：直接在 render 時傳入的 index 是 sort 後的 index
+                    // 所以修改 user.logs 需要先 sort 一次確保順序一致，再修改
+                    user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
                     user.logs[logIndex].date = newDate;
                     saveData();
                     renderBackend();
-                    
-                    setTimeout(() => {
-                        const d = document.getElementById(`details-${uid}`);
-                        if(d) {
-                            d.style.display = 'block';
-                            d.previousElementSibling.classList.add('expanded');
-                        }
-                    }, 50);
+                    restoreExpand(uid);
                 }
             } else {
-                spanEl.innerHTML = originalDate;
+                el.innerHTML = originalDate;
             }
         };
 
-        input.onblur = saveEdit;
+        input.onblur = save;
         input.onkeypress = (e) => { if(e.key === 'Enter') input.blur(); };
-        input.onclick = (e) => e.stopPropagation(); 
+        input.onclick = (e) => e.stopPropagation();
+    }
+
+    // 修改內容
+    function editContent(event, uid, logIndex, el) {
+        if (!isEditMode) return;
+        event.stopPropagation();
+
+        if (el.querySelector('input')) return;
+
+        const originalText = el.innerText;
+        const input = document.createElement('input'); // 使用 input 比較整齊，若內容多可用 textarea
+        input.type = 'text';
+        input.value = originalText;
+        input.style.width = '100%';
+        input.style.padding = '4px';
+
+        el.innerHTML = '';
+        el.appendChild(input);
+        input.focus();
+
+        const save = () => {
+            const newText = input.value.trim();
+            if (newText && newText !== originalText) {
+                const user = db.find(u => u.id === uid);
+                if (user) {
+                    user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    user.logs[logIndex].content = newText;
+                    saveData();
+                    renderBackend();
+                    restoreExpand(uid);
+                }
+            } else {
+                el.innerHTML = originalText;
+            }
+        };
+
+        input.onblur = save;
+        input.onkeypress = (e) => { if(e.key === 'Enter') input.blur(); };
+        input.onclick = (e) => e.stopPropagation();
+    }
+
+    // 刪除單筆紀錄
+    function deleteSingleLog(event, uid, logIndex) {
+        event.stopPropagation();
+        const t = i18n[currentLang];
+        
+        if(confirm(t.alertDeleteLog)) {
+            const user = db.find(u => u.id === uid);
+            if(user) {
+                user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
+                user.logs.splice(logIndex, 1); // 刪除該筆
+                
+                // 如果刪到沒紀錄，是否要刪除人？ 目前邏輯保留人名
+                saveData();
+                renderBackend();
+                restoreExpand(uid);
+            }
+        }
+    }
+
+    // 輔助：重新渲染後保持展開狀態
+    function restoreExpand(uid) {
+        setTimeout(() => {
+            const d = document.getElementById(`details-${uid}`);
+            if(d) {
+                d.style.display = 'block';
+                d.previousElementSibling.classList.add('expanded');
+            }
+        }, 50);
     }
 
     function updateCounter() {
