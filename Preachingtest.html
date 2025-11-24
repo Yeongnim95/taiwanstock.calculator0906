@@ -115,12 +115,14 @@
         }
         .status-found { background: #e8f5e9; color: #2e7d32; }
         .status-new { background: #fff3e0; color: #ef6c00; }
+        .status-loading { background: #e3f2fd; color: #1565c0; text-align: center; }
 
         button.submit-btn {
             width: 100%; padding: 14px; margin-top: 20px;
             background: var(--primary-green); color: white; border: none; border-radius: 8px;
             font-size: 1rem; font-weight: bold; cursor: pointer;
         }
+        button.submit-btn:disabled { background: #ccc; cursor: not-allowed; }
 
         /* --- 後台列表 --- */
         .backend-toolbar {
@@ -131,9 +133,8 @@
         
         .toolbar-left { display: flex; align-items: center; gap: 15px; font-size: 0.95rem; font-weight: bold; color: #555; }
         
-        /* 編輯模式控制項 */
         .edit-controls { display: none; align-items: center; gap: 10px; }
-        .show-edit .edit-controls { display: flex; } /* 顯示編輯控制項 */
+        .show-edit .edit-controls { display: flex; } 
         
         .toggle-edit-btn {
             background: #2196f3; color: white; border: none; padding: 8px 16px; 
@@ -147,100 +148,73 @@
             padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.9rem;
         }
 
-        /* 列表 Grid 定義：統一寬度 */
-        /* 40px(Check) | 0.8fr(ID) | 1fr(Name/Type) | 1.2fr(Date) | 1.5fr(Content) | 40px(Action) */
+        /* Grid System */
         .grid-row {
             display: grid;
-            grid-template-columns: 0px 0.8fr 1fr 1.2fr 1.5fr 0px; /* 預設 Checkbox 和 Action 隱藏 (寬度0) */
-            align-items: center;
-            padding: 15px;
-            transition: all 0.3s ease;
+            grid-template-columns: 0px 0.8fr 1fr 1.2fr 1.5fr 0px; 
+            align-items: center; padding: 15px; transition: all 0.3s ease;
         }
-
-        /* 編輯模式下展開欄位 */
         .list-container.edit-mode .grid-row {
             grid-template-columns: 40px 0.8fr 1fr 1.2fr 1.5fr 40px; 
         }
 
-        /* 標題列 */
         .list-header-row {
             background: var(--primary-green); color: white; font-weight: bold;
             border-radius: 8px 8px 0 0; margin-top: 10px;
-            padding: 10px 15px; /* 覆寫 grid-row padding 以匹配 */
+            padding: 10px 15px; 
         }
         
         .sortable { cursor: pointer; user-select: none; display: flex; align-items: center; gap: 5px; }
 
-        /* 使用者卡片 */
         .user-card { border: 1px solid #eee; border-top: none; background: white; }
         .user-card:last-child { border-radius: 0 0 8px 8px; }
 
-        /* 摘要行 */
         .user-summary { cursor: pointer; font-size: 1rem; }
         .user-summary:hover { background: #f9fbe7; }
         .user-summary.expanded { background: #f1f8e9; border-bottom: 1px solid #e0e0e0; }
 
-        /* 詳細資料區塊 - 現在也是 Grid */
         .user-details { display: none; background: #fafafa; }
         .user-details.show { display: block; }
 
-        .detail-row {
-            border-bottom: 1px solid #eee;
-            background: #fff;
-            color: #555;
-            font-size: 1rem; /* 與上方字體一致 */
-        }
+        .detail-row { border-bottom: 1px solid #eee; background: #fff; color: #555; font-size: 1rem; }
         .detail-row:last-child { border-bottom: none; }
 
-        /* 隱藏元素與動畫 */
         .check-cell { overflow: hidden; white-space: nowrap; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .list-container.edit-mode .check-cell { opacity: 1; }
 
         .action-cell { overflow: hidden; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .list-container.edit-mode .action-cell { opacity: 1; }
 
-        /* 編輯中的欄位 */
         .editable { cursor: default; }
         .list-container.edit-mode .editable { 
             cursor: pointer; border: 1px dashed #ccc; border-radius: 4px; padding: 2px 4px; background: #fff;
         }
         .list-container.edit-mode .editable:hover { border-color: #2196f3; background: #e3f2fd; }
 
-        /* 刪除小按鈕 (X) */
         .btn-remove-log {
             background: #ffcdd2; color: #b71c1c; border: none; width: 24px; height: 24px;
             border-radius: 50%; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center;
         }
 
-        /* Tags */
         .tag { padding: 4px 10px; border-radius: 12px; font-size: 0.85rem; color: white; display: inline-block; }
         .tag-me { background: #26a69a; }
         .tag-other { background: #ef5350; }
 
-        /* RWD 手機版 */
+        /* RWD */
         @media (max-width: 700px) {
             .container { padding: 15px; margin: 10px auto; width: 96%; }
             .form-grid { grid-template-columns: 1fr; }
             .nav-title span { display: none; }
-            
-            .list-header-row { display: none; } /* 手機版隱藏表頭 */
-            
-            /* 手機版不使用 Grid，改用 Flex 堆疊，但保留編輯模式邏輯 */
+            .list-header-row { display: none; } 
             .grid-row, .list-container.edit-mode .grid-row {
                 display: flex; flex-direction: column; align-items: flex-start; gap: 5px; position: relative;
                 padding-left: 15px;
             }
-
-            /* 編輯模式下，Checkbox 絕對定位 */
-            .list-container.edit-mode .grid-row { padding-left: 45px; } /* 留空間給 checkbox */
-            
+            .list-container.edit-mode .grid-row { padding-left: 45px; } 
             .check-cell { position: absolute; left: 10px; top: 15px; width: auto; opacity: 0; pointer-events: none;}
             .list-container.edit-mode .check-cell { opacity: 1; pointer-events: auto; }
-
             .action-cell { position: absolute; right: 10px; top: 10px; width: auto; opacity: 0; pointer-events: none;}
             .list-container.edit-mode .action-cell { opacity: 1; pointer-events: auto; }
-
-            /* 手機版內容調整 */
             .col-date { font-size: 0.85rem; color: #666; }
             .col-content { width: 100%; white-space: normal; }
         }
@@ -251,9 +225,7 @@
 <nav>
     <div class="nav-left">
         <div class="nav-title">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary-green)">
-                <path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 5.5V19c0 .55.45 1 1 1 1.11-.35 2.33-.5 3.5-.5 1.95 0 4.05.4 5.5 1.5 1.45-1.1 3.55-1.5 5.5-1.5 1.17 0 2.39.15 3.5.5.55 0 1-.45 1-1V5c0-.55-.45-1-1-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/>
-            </svg>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="var(--primary-green)"><path d="M21 5c-1.11-.35-2.33-.5-3.5-.5-1.95 0-4.05.4-5.5 1.5-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 5.5V19c0 .55.45 1 1 1 1.11-.35 2.33-.5 3.5-.5 1.95 0 4.05.4 5.5 1.5 1.45-1.1 3.55-1.5 5.5-1.5 1.17 0 2.39.15 3.5.5.55 0 1-.45 1-1V5c0-.55-.45-1-1-1zM21 18.5c-1.1-.35-2.3-.5-3.5-.5-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5 1.2 0 2.4.15 3.5.5v11.5z"/></svg>
             <span id="txt-app-title">전도 관리 시스템</span>
         </div>
         <div class="menu-items">
@@ -263,7 +235,7 @@
     </div>
     
     <div class="lang-switch">
-        <select class="lang-select" onchange="setLanguage(this.value)">
+        <select class="lang-select" onchange="window.setLanguage(this.value)">
             <option value="ko">한국어</option>
             <option value="zh">中文</option>
         </select>
@@ -271,7 +243,6 @@
 </nav>
 
 <div class="container">
-
     <div id="entrySection" class="page-section active-section">
         <h2 id="txt-entry-header">전도 섭외자 등록</h2>
         <div id="statusMsg" class="status-bar"></div>
@@ -279,19 +250,16 @@
         <div class="form-grid">
             <div class="form-group">
                 <label id="lbl-id">번호</label>
-                <input type="text" id="idInput" placeholder="9999" oninput="handleIdInput()">
+                <input type="text" id="idInput" placeholder="9999" oninput="window.handleIdInput()">
             </div>
-
             <div class="form-group">
                 <label id="lbl-name">이름</label>
-                <input type="text" id="nameInput" placeholder="이름 입력" oninput="handleNameInput()">
+                <input type="text" id="nameInput" placeholder="이름 입력" oninput="window.handleNameInput()">
             </div>
-
             <div class="form-group">
                 <label id="lbl-date">날짜</label>
                 <input type="date" id="recordDate">
             </div>
-
             <div class="form-group">
                 <label id="lbl-type">회신 유형</label>
                 <select id="replyType">
@@ -299,14 +267,12 @@
                     <option value="other" id="opt-other">상대방 회신</option>
                 </select>
             </div>
-
             <div class="form-group form-full-width">
                 <label id="lbl-content">내용</label>
                 <textarea id="content" rows="5" placeholder="내용을 입력하세요..."></textarea>
             </div>
         </div>
-        
-        <button class="submit-btn" onclick="submitData()" id="btn-submit">등록하기</button>
+        <button class="submit-btn" onclick="window.submitData()" id="btn-submit">등록하기 (Cloud Sync)</button>
     </div>
 
     <div id="backendSection" class="page-section">
@@ -315,163 +281,158 @@
         <div class="backend-toolbar">
             <div class="toolbar-left">
                 <span id="txt-total-count">섭외자: 0명</span>
-                
                 <div class="edit-controls" id="editControls">
                     <span style="color:#aaa;">|</span>
                     <label style="display:flex; align-items:center; cursor:pointer;">
-                        <input type="checkbox" id="selectAll" onclick="toggleSelectAll()" style="width:18px; height:18px; margin-right:5px;">
+                        <input type="checkbox" id="selectAll" onclick="window.toggleSelectAll()" style="width:18px; height:18px; margin-right:5px;">
                         <span id="txt-select-all">전체 선택</span>
                     </label>
-                    <button class="delete-btn" onclick="deleteSelected()" id="btn-delete">
-                        선택 삭제
-                    </button>
+                    <button class="delete-btn" onclick="window.deleteSelected()" id="btn-delete">선택 삭제</button>
                 </div>
             </div>
-            
-            <button class="toggle-edit-btn" onclick="toggleEditMode()" id="btn-toggle-edit">
-                편집
-            </button>
+            <button class="toggle-edit-btn" onclick="window.toggleEditMode()" id="btn-toggle-edit">편집</button>
         </div>
 
         <div class="list-container" id="dataListContainer">
             <div class="list-header-row grid-row">
-                <div class="check-cell"></div> <div id="col-id">번호</div>
+                <div class="check-cell"></div>
+                <div id="col-id">번호</div>
                 <div id="col-name">이름</div>
-                <div class="sortable" onclick="toggleSort()">
+                <div class="sortable" onclick="window.toggleSort()">
                     <span id="col-date">최근 날짜</span> <span id="sortIcon">▼</span>
                 </div>
                 <div id="col-content">최신 내용</div>
-                <div class="action-cell"></div> </div>
-
-            <div id="dataList"></div>
+                <div class="action-cell"></div>
+            </div>
+            <div id="dataList">
+                <div style="padding:20px; text-align:center; color:#888;">Loading Cloud Data...</div>
+            </div>
         </div>
     </div>
-
 </div>
 
-<script>
-    // --- 語言資源 (i18n) ---
+<script type="module">
+    // --- FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 【重要】請將下方的大括號內容替換為您從 Firebase Console 取得的 Config
+    // ------------------------------------------------------------------
+    const firebaseConfig = {
+
+        apiKey: "AIzaSyBXnq1RzY0zxGE0trwLPR-PHtdfFCvRw0A",
+  authDomain: "discourse-dissemination.firebaseapp.com",
+  projectId: "discourse-dissemination",
+  storageBucket: "discourse-dissemination.firebasestorage.app",
+  messagingSenderId: "686407798490",
+  appId: "1:686407798490:web:e41a5f2d007615fb6e5fe3",
+  measurementId: "G-M0JHY4QED9"
+
+    };
+    // ------------------------------------------------------------------
+
+    let dbInstance;
+    let cloudEnabled = false;
+
+    // 嘗試初始化 Firebase
+    try {
+        if (firebaseConfig.apiKey) {
+            const app = initializeApp(firebaseConfig);
+            dbInstance = getFirestore(app);
+            cloudEnabled = true;
+            console.log("Firebase initialized successfully.");
+        } else {
+            console.warn("Firebase Config not found. Using Placeholder Mode.");
+        }
+    } catch (e) {
+        console.error("Firebase init failed:", e);
+    }
+
+    // --- 全域變數與邏輯 ---
+    let currentLang = localStorage.getItem('app_lang') || 'ko'; 
+    let localDb = []; // 現在這是從雲端同步下來的鏡像資料
+    let sortDesc = true; 
+    let isEditMode = false;
+
     const i18n = {
         ko: {
-            appTitle: "전도 관리 시스템",
-            btnEntry: "등록",
-            btnBackend: "데이터",
-            headerEntry: "전도 섭외자 등록",
-            lblId: "번호",
-            lblName: "이름",
-            lblDate: "날짜",
-            lblType: "회신 유형",
-            lblContent: "내용",
-            optMe: "내가 회신",
-            optOther: "상대방 회신",
-            phId: "예: 9999",
-            phName: "예: 김철수",
-            phContent: "대화 내용이나 기도 제목 입력...",
-            btnSubmit: "등록하기",
-            headerBackend: "데이터 관리",
-            txtSelectAll: "전체 선택",
-            txtTotal: "섭외자: ",
-            txtPerson: "명",
-            btnDelete: "선택 삭제",
-            btnEdit: "편집",
-            btnDone: "완료",
-            colId: "번호",
-            colName: "이름",
-            colDate: "최근 날짜",
-            colContent: "최신 내용",
-            statusFound: "✔ 기존 데이터 발견: ",
-            statusNew: "✚ 새로운 번호/이름입니다.",
+            appTitle: "전도 관리 시스템", btnEntry: "등록", btnBackend: "데이터",
+            headerEntry: "전도 섭외자 등록", lblId: "번호", lblName: "이름",
+            lblDate: "날짜", lblType: "회신 유형", lblContent: "내용",
+            optMe: "내가 회신", optOther: "상대방 회신",
+            phId: "예: 9999", phName: "예: 김철수", phContent: "대화 내용이나 기도 제목 입력...",
+            btnSubmit: "등록하기", headerBackend: "데이터 관리",
+            txtSelectAll: "전체 선택", txtTotal: "섭외자: ", txtPerson: "명",
+            btnDelete: "선택 삭제", btnEdit: "편집", btnDone: "완료",
+            colId: "번호", colName: "이름", colDate: "최근 날짜", colContent: "최신 내용",
+            statusFound: "✔ 기존 데이터 발견: ", statusNew: "✚ 새로운 번호/이름입니다.",
             statusNewId: "✚ 새 섭외자! 추천 번호: ",
             alertIncomplete: "모든 항목을 입력해주세요.",
-            alertUpdate: "업데이트 완료: ",
-            alertCreate: "새 파일 생성 완료: ",
+            alertUpdate: "업데이트 완료 (Cloud): ", alertCreate: "새 파일 생성 완료 (Cloud): ",
             alertConfirmDelete: "선택한 섭외자와 모든 기록을 영구적으로 삭제하시겠습니까?",
-            alertDeleted: "삭제되었습니다.",
-            alertDeleteLog: "이 기록을 삭제하시겠습니까?",
-            tagMe: "본인",
-            tagOther: "상대",
-            msgEmpty: "(기록 없음)",
+            alertDeleted: "삭제되었습니다.", alertDeleteLog: "이 기록을 삭제하시겠습니까?",
+            tagMe: "본인", tagOther: "상대", msgEmpty: "(기록 없음)",
+            msgCloudError: "Firebase 설정이 필요합니다. 코드를 확인해주세요."
         },
         zh: {
-            appTitle: "傳道整理系統",
-            btnEntry: "傳道登錄",
-            btnBackend: "後台資料",
-            headerEntry: "傳道登錄表",
-            lblId: "編號",
-            lblName: "姓名",
-            lblDate: "日期",
-            lblType: "回覆類型",
-            lblContent: "回覆內容",
-            optMe: "我回覆",
-            optOther: "對方回覆",
-            phId: "例: 9999",
-            phName: "例: 金大中",
-            phContent: "請輸入對話重點或備忘...",
-            btnSubmit: "登錄資料",
-            headerBackend: "後台登錄資料",
-            txtSelectAll: "全選",
-            txtTotal: "涉外者人數: ",
-            txtPerson: " 人",
-            btnDelete: "刪除選取",
-            btnEdit: "編輯",
-            btnDone: "完成",
-            colId: "編號",
-            colName: "姓名",
-            colDate: "最近日期",
-            colContent: "最新內容",
-            statusFound: "✔ 已找到舊資料：",
-            statusNew: "✚ 這是新的編號，請輸入姓名",
+            appTitle: "傳道整理系統", btnEntry: "傳道登錄", btnBackend: "後台資料",
+            headerEntry: "傳道登錄表", lblId: "編號", lblName: "姓名",
+            lblDate: "日期", lblType: "回覆類型", lblContent: "回覆內容",
+            optMe: "我回覆", optOther: "對方回覆",
+            phId: "例: 9999", phName: "例: 金大中", phContent: "請輸入對話重點或備忘...",
+            btnSubmit: "登錄資料", headerBackend: "後台登錄資料",
+            txtSelectAll: "全選", txtTotal: "涉外者人數: ", txtPerson: " 人",
+            btnDelete: "刪除選取", btnEdit: "編輯", btnDone: "完成",
+            colId: "編號", colName: "姓名", colDate: "最近日期", colContent: "最新內容",
+            statusFound: "✔ 已找到舊資料：", statusNew: "✚ 這是新的編號，請輸入姓名",
             statusNewId: "✚ 新朋友！系統建議編號：",
             alertIncomplete: "請填寫所有欄位",
-            alertUpdate: "已更新資料：",
-            alertCreate: "已建立新檔案：",
+            alertUpdate: "已更新資料 (雲端同步)：", alertCreate: "已建立新檔案 (雲端同步)：",
             alertConfirmDelete: "確定要永久刪除這些檔案及其所有紀錄嗎？",
-            alertDeleted: "刪除完成！",
-            alertDeleteLog: "確定要刪除這條紀錄嗎？",
-            tagMe: "我",
-            tagOther: "他",
-            msgEmpty: "(尚無紀錄)",
+            alertDeleted: "刪除完成！", alertDeleteLog: "確定要刪除這條紀錄嗎？",
+            tagMe: "我", tagOther: "他", msgEmpty: "(尚無紀錄)",
+            msgCloudError: "尚未設定雲端金鑰，無法儲存。請參閱說明設置 Firebase。"
         }
     };
 
-    // --- 全域變數 ---
-    let currentLang = localStorage.getItem('app_lang') || 'ko'; 
-    let db = JSON.parse(localStorage.getItem('missionary_data_v4')) || [];
-    let sortDesc = true; 
-    let isEditMode = false; // 編輯模式狀態
+    // 啟動時監聽雲端資料
+    if (cloudEnabled) {
+        const q = collection(dbInstance, "missionary_data");
+        onSnapshot(q, (snapshot) => {
+            localDb = [];
+            snapshot.forEach((doc) => {
+                localDb.push(doc.data());
+            });
+            // 資料更新後重新渲染
+            renderBackend();
+            // 如果正在輸入 ID，重新觸發檢查
+            const activeId = document.getElementById('idInput').value;
+            if(activeId) window.handleIdInput();
+        });
+    } else {
+        // 無金鑰時的提示
+        document.getElementById('dataList').innerHTML = `<div style="padding:20px; text-align:center; color:red;">${i18n[currentLang].msgCloudError}</div>`;
+    }
 
-    // 初始化
+    // 初始化 UI
     window.onload = function() {
         document.querySelector('.lang-select').value = currentLang;
-        
-        if (db.length === 0) {
-            const oldDB = localStorage.getItem('missionary_data_v3') || localStorage.getItem('missionary_data_v2');
-            if (oldDB) {
-                db = JSON.parse(oldDB);
-                saveData();
-            } else {
-                db.push({ id: '0001', name: '良丞 (Yang)', logs: [] }); 
-            }
-        }
-
         applyLanguage();
         document.getElementById('recordDate').valueAsDate = new Date();
-        renderBackend();
     };
 
-    // --- 1. 多語言功能 ---
-    function setLanguage(lang) {
+    // 將函數掛載到 window 以便 HTML 呼叫
+    window.setLanguage = (lang) => {
         currentLang = lang;
         localStorage.setItem('app_lang', lang);
         applyLanguage();
-        const nameVal = document.getElementById('nameInput').value;
-        updateReplyOption(nameVal); 
         renderBackend();
-    }
+        const nameVal = document.getElementById('nameInput').value;
+        window.updateReplyOption(nameVal);
+    };
 
     function applyLanguage() {
         const t = i18n[currentLang];
-        
         const map = {
             'txt-app-title': t.appTitle, 'btn-entry': t.btnEntry, 'btn-backend': t.btnBackend,
             'txt-entry-header': t.headerEntry, 'lbl-id': t.lblId, 'lbl-name': t.lblName,
@@ -481,98 +442,59 @@
             'btn-delete': t.btnDelete, 'col-id': t.colId, 'col-name': t.colName,
             'col-date': t.colDate, 'col-content': t.colContent
         };
-
         for (const [id, text] of Object.entries(map)) {
             const el = document.getElementById(id);
             if(el) el.textContent = text;
         }
-
-        // 更新編輯按鈕文字
         const editBtn = document.getElementById('btn-toggle-edit');
         if(editBtn) editBtn.textContent = isEditMode ? t.btnDone : t.btnEdit;
 
         document.getElementById('idInput').placeholder = t.phId;
         document.getElementById('nameInput').placeholder = t.phName;
         document.getElementById('content').placeholder = t.phContent;
-        
         updateCounter();
     }
 
-    // --- 2. 登錄頁邏輯 (維持不變) ---
-    function handleIdInput() {
+    // --- 業務邏輯 ---
+
+    window.handleIdInput = () => {
         const t = i18n[currentLang];
         const idVal = document.getElementById('idInput').value.trim();
-        const user = db.find(u => u.id === idVal);
-        
+        const user = localDb.find(u => u.id === idVal);
         if (user) {
             document.getElementById('nameInput').value = user.name;
             showStatus(t.statusFound + user.name, 'found');
-            updateReplyOption(user.name);
+            window.updateReplyOption(user.name);
         } else {
             if(idVal.length >= 4) showStatus(t.statusNew, 'new');
             else document.getElementById('statusMsg').style.display = 'none';
-            updateReplyOption(null);
+            window.updateReplyOption(null);
         }
-    }
+    };
 
-    function handleNameInput() {
+    window.handleNameInput = () => {
         const t = i18n[currentLang];
         const nameVal = document.getElementById('nameInput').value.trim();
-        const user = db.find(u => u.name === nameVal);
-
+        const user = localDb.find(u => u.name === nameVal);
         if (user) {
             document.getElementById('idInput').value = user.id;
             showStatus(t.statusFound + user.id, 'found');
-            updateReplyOption(user.name);
+            window.updateReplyOption(user.name);
         } else {
             if (document.getElementById('idInput').value === '') {
                 const newId = generateNewId();
                 showStatus(t.statusNewId + newId, 'new');
                 document.getElementById('idInput').value = newId; 
             }
-            updateReplyOption(null);
+            window.updateReplyOption(null);
         }
-    }
+    };
 
-    function updateReplyOption(name) {
+    window.updateReplyOption = (name) => {
         const t = i18n[currentLang];
         const option = document.getElementById('opt-other');
-        if (name) option.textContent = `${t.optOther} (${name})`;
-        else option.textContent = t.optOther;
-    }
-
-    function submitData() {
-        const t = i18n[currentLang];
-        const id = document.getElementById('idInput').value.trim();
-        const name = document.getElementById('nameInput').value.trim();
-        const date = document.getElementById('recordDate').value;
-        const typeSelect = document.getElementById('replyType').value;
-        const content = document.getElementById('content').value.trim();
-
-        if (!id || !name || !date || !content) {
-            alert(t.alertIncomplete);
-            return;
-        }
-
-        let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
-
-        let user = db.find(u => u.id === id);
-        if (user) {
-            user.name = name;
-            user.logs.push({ date, type: typeLabel, content });
-            alert(t.alertUpdate + name);
-        } else {
-            db.push({
-                id: id, name: name,
-                logs: [{ date, type: typeLabel, content }]
-            });
-            alert(t.alertCreate + name);
-        }
-
-        saveData();
-        renderBackend();
-        document.getElementById('content').value = '';
-    }
+        option.textContent = name ? `${t.optOther} (${name})` : t.optOther;
+    };
 
     function showStatus(msg, type) {
         const el = document.getElementById('statusMsg');
@@ -581,13 +503,202 @@
         el.style.display = 'block';
     }
 
-    // --- 3. 後台邏輯 (含編輯模式) ---
-    
-    // 切換編輯模式
-    function toggleEditMode() {
-        isEditMode = !isEditMode;
+    // --- 核心資料操作 (Cloud) ---
+
+    window.submitData = async () => {
+        if (!cloudEnabled) { alert(i18n[currentLang].msgCloudError); return; }
+
+        const t = i18n[currentLang];
+        const id = document.getElementById('idInput').value.trim();
+        const name = document.getElementById('nameInput').value.trim();
+        const date = document.getElementById('recordDate').value;
+        const typeSelect = document.getElementById('replyType').value;
+        const content = document.getElementById('content').value.trim();
+
+        if (!id || !name || !date || !content) { alert(t.alertIncomplete); return; }
+
+        let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
+        const userRef = doc(dbInstance, "missionary_data", id);
+
+        // 檢查是否已存在
+        let user = localDb.find(u => u.id === id);
+        let updatedLogs = [];
         
-        // 更新 UI 狀態
+        if (user) {
+            updatedLogs = [...user.logs, { date, type: typeLabel, content }];
+            await setDoc(userRef, { id, name, logs: updatedLogs }, { merge: true });
+            alert(t.alertUpdate + name);
+        } else {
+            updatedLogs = [{ date, type: typeLabel, content }];
+            await setDoc(userRef, { id, name, logs: updatedLogs });
+            alert(t.alertCreate + name);
+        }
+        document.getElementById('content').value = '';
+    };
+
+    window.deleteSelected = async () => {
+        if (!cloudEnabled) return;
+        const t = i18n[currentLang];
+        const checks = document.getElementsByName('selectUser');
+        const toDelete = [];
+        checks.forEach(c => { if(c.checked) toDelete.push(c.value); });
+
+        if (toDelete.length === 0) return;
+        if (confirm(t.alertConfirmDelete)) {
+            // 批次刪除
+            for (const uid of toDelete) {
+                await deleteDoc(doc(dbInstance, "missionary_data", uid));
+            }
+            document.getElementById('selectAll').checked = false;
+            alert(t.alertDeleted);
+            if (toDelete.includes(document.getElementById('idInput').value)) {
+                document.getElementById('idInput').value = '';
+                document.getElementById('nameInput').value = '';
+            }
+        }
+    };
+
+    // 單筆 Log 刪除
+    window.deleteSingleLog = async (event, uid, logIndex) => {
+        if (!cloudEnabled) return;
+        event.stopPropagation();
+        const t = i18n[currentLang];
+        if(confirm(t.alertDeleteLog)) {
+            const user = localDb.find(u => u.id === uid);
+            if(user) {
+                // 需要確保順序一致，因為 UI 是排序過的
+                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                sortedLogs.splice(logIndex, 1);
+                
+                await updateDoc(doc(dbInstance, "missionary_data", uid), {
+                    logs: sortedLogs
+                });
+                restoreExpand(uid);
+            }
+        }
+    };
+
+    // 修改日期
+    window.editDate = (event, uid, logIndex, el) => {
+        if (!isEditMode) return;
+        event.stopPropagation();
+        if (el.querySelector('input')) return;
+
+        const originalDate = el.innerText;
+        const input = document.createElement('input');
+        input.type = 'date'; input.value = originalDate; input.style.width = '100%';
+        el.innerHTML = ''; el.appendChild(input); input.focus();
+
+        input.onblur = async () => {
+            const newDate = input.value;
+            if (newDate && newDate !== originalDate) {
+                const user = localDb.find(u => u.id === uid);
+                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                sortedLogs[logIndex].date = newDate;
+                await updateDoc(doc(dbInstance, "missionary_data", uid), { logs: sortedLogs });
+                restoreExpand(uid);
+            } else {
+                el.innerHTML = originalDate;
+            }
+        };
+        input.onclick = (e) => e.stopPropagation();
+    };
+
+    // 修改內容
+    window.editContent = (event, uid, logIndex, el) => {
+        if (!isEditMode) return;
+        event.stopPropagation();
+        if (el.querySelector('input')) return;
+
+        const originalText = el.innerText;
+        const input = document.createElement('input');
+        input.type = 'text'; input.value = originalText; input.style.width = '100%'; input.style.padding='4px';
+        el.innerHTML = ''; el.appendChild(input); input.focus();
+
+        input.onblur = async () => {
+            const newText = input.value.trim();
+            if (newText && newText !== originalText) {
+                const user = localDb.find(u => u.id === uid);
+                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                sortedLogs[logIndex].content = newText;
+                await updateDoc(doc(dbInstance, "missionary_data", uid), { logs: sortedLogs });
+                restoreExpand(uid);
+            } else {
+                el.innerHTML = originalText;
+            }
+        };
+        input.onclick = (e) => e.stopPropagation();
+    };
+
+    // --- UI 渲染邏輯 ---
+
+    function renderBackend() {
+        if (!cloudEnabled) return;
+        const t = i18n[currentLang];
+        const listContainer = document.getElementById('dataList');
+        listContainer.innerHTML = '';
+
+        // 處理與排序
+        const processedUsers = localDb.map(user => {
+            const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const lastLog = sortedLogs[0] || { date: '0000-00-00', content: t.msgEmpty };
+            return { ...user, logs: sortedLogs, lastLog };
+        });
+
+        processedUsers.sort((a, b) => {
+            const dA = new Date(a.lastLog.date);
+            const dB = new Date(b.lastLog.date);
+            return sortDesc ? (dB - dA) : (dA - dB);
+        });
+
+        processedUsers.forEach(user => {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+            const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
+
+            const summaryHtml = `
+                <div class="user-summary grid-row" onclick="window.toggleDetails('${user.id}')">
+                    <div class="check-cell" onclick="event.stopPropagation()">
+                        <input type="checkbox" name="selectUser" value="${user.id}">
+                    </div>
+                    <div style="font-weight:bold; color:#666;">${user.id}</div>
+                    <div style="font-weight:bold; font-size:1.05rem;">${user.name}</div>
+                    <div class="col-date editable" style="color:#2e7d32;" onclick="window.editDate(event, '${user.id}', 0, this)">${displayDate}</div>
+                    <div class="col-content editable" onclick="window.editContent(event, '${user.id}', 0, this)">${user.lastLog.content}</div>
+                    <div class="action-cell"></div>
+                </div>`;
+
+            let logsHtml = '';
+            user.logs.forEach((log, idx) => {
+                const typeText = log.type === 'me' ? t.tagMe : t.tagOther;
+                const typeClass = log.type === 'me' ? 'tag-me' : 'tag-other';
+                logsHtml += `
+                    <div class="detail-row grid-row">
+                        <div class="check-cell"></div>
+                        <div></div>
+                        <div><span class="tag ${typeClass}">${typeText}</span></div>
+                        <div class="editable" style="color:#1565c0;" onclick="window.editDate(event, '${user.id}', ${idx}, this)">${log.date}</div>
+                        <div class="editable" onclick="window.editContent(event, '${user.id}', ${idx}, this)">${log.content}</div>
+                        <div class="action-cell">
+                            <button class="btn-remove-log" onclick="window.deleteSingleLog(event, '${user.id}', ${idx})">✕</button>
+                        </div>
+                    </div>`;
+            });
+
+            card.innerHTML = summaryHtml + `<div class="user-details" id="details-${user.id}">${logsHtml}</div>`;
+            listContainer.appendChild(card);
+        });
+
+        if (isEditMode) {
+            document.getElementById('dataListContainer').classList.add('edit-mode');
+        }
+        updateCounter();
+    }
+
+    // --- 其他工具 ---
+    
+    window.toggleEditMode = () => {
+        isEditMode = !isEditMode;
         const container = document.getElementById('dataListContainer');
         const controls = document.getElementById('editControls');
         const btn = document.getElementById('btn-toggle-edit');
@@ -603,111 +714,16 @@
             controls.style.display = 'none';
             btn.textContent = t.btnEdit;
             btn.classList.remove('editing');
-            
-            // 退出時取消全選
             const checks = document.getElementsByName('selectUser');
             checks.forEach(c => c.checked = false);
             document.getElementById('selectAll').checked = false;
         }
-    }
+    };
 
-    function toggleSort() {
-        sortDesc = !sortDesc;
-        document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲';
-        renderBackend();
-    }
-
-    function renderBackend() {
-        const t = i18n[currentLang];
-        const listContainer = document.getElementById('dataList');
-        listContainer.innerHTML = '';
-
-        const processedUsers = db.map(user => {
-            user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-            const lastLog = user.logs[0] || { date: '0000-00-00', content: t.msgEmpty };
-            return { ...user, lastLog };
-        });
-
-        processedUsers.sort((a, b) => {
-            const dA = new Date(a.lastLog.date);
-            const dB = new Date(b.lastLog.date);
-            return sortDesc ? (dB - dA) : (dA - dB);
-        });
-
-        processedUsers.forEach(user => {
-            const card = document.createElement('div');
-            card.className = 'user-card';
-
-            const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
-            
-            // 摘要行 (Summary Row)
-            const summaryHtml = `
-                <div class="user-summary grid-row" onclick="toggleDetails('${user.id}')">
-                    <div class="check-cell" onclick="event.stopPropagation()">
-                        <input type="checkbox" name="selectUser" value="${user.id}">
-                    </div>
-                    
-                    <div style="font-weight:bold; color:#666;">${user.id}</div>
-                    <div style="font-weight:bold; font-size:1.05rem;">${user.name}</div>
-                    <div class="col-date editable" style="color:#2e7d32;" onclick="editDate(event, '${user.id}', 0, this)">${displayDate}</div>
-                    <div class="col-content editable" onclick="editContent(event, '${user.id}', 0, this)">${user.lastLog.content}</div>
-                    
-                    <div class="action-cell"></div>
-                </div>
-            `;
-
-            // 詳細資料行 (Detail Rows) - 改成 Grid 佈局
-            let logsHtml = '';
-            user.logs.forEach((log, idx) => {
-                // 跳過第一個 (最新)，因為已顯示在 Summary
-                // 但為了能在展開後編輯所有紀錄，我們通常列出全部，或者摘要行就是最新一行。
-                // 為了邏輯簡單，這裡列出全部歷史紀錄(包含最新)，或者只列出舊的。
-                // 為了讓每條都能單獨刪除，我們列出全部。
-                
-                const typeText = log.type === 'me' ? t.tagMe : t.tagOther;
-                const typeClass = log.type === 'me' ? 'tag-me' : 'tag-other';
-                
-                // 注意：這裡我們使用 grid-row class 讓它跟表頭對齊
-                logsHtml += `
-                    <div class="detail-row grid-row">
-                        <div class="check-cell"></div> <div></div> <div><span class="tag ${typeClass}">${typeText}</span></div>
-                        
-                        <div class="editable" style="color:#1565c0;" onclick="editDate(event, '${user.id}', ${idx}, this)">${log.date}</div>
-                        
-                        <div class="editable" onclick="editContent(event, '${user.id}', ${idx}, this)">${log.content}</div>
-                        
-                        <div class="action-cell">
-                            <button class="btn-remove-log" onclick="deleteSingleLog(event, '${user.id}', ${idx})">✕</button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            const detailsHtml = `
-                <div class="user-details" id="details-${user.id}">
-                    ${logsHtml}
-                </div>
-            `;
-
-            card.innerHTML = summaryHtml + detailsHtml;
-            listContainer.appendChild(card);
-        });
-        
-        // 恢復編輯狀態的 UI 顯示 (重新渲染後會不見，需補上)
-        if (isEditMode) {
-            document.getElementById('dataListContainer').classList.add('edit-mode');
-        }
-
-        updateCounter();
-    }
-
-    function toggleDetails(uid) {
-        // 如果正在編輯文字，不觸發收合
-        if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
-
+    window.toggleDetails = (uid) => {
+        if (document.activeElement.tagName === 'INPUT') return;
         const details = document.getElementById(`details-${uid}`);
         const summary = details.previousElementSibling;
-        
         if (details.style.display === 'block') {
             details.style.display = 'none';
             summary.classList.remove('expanded');
@@ -715,177 +731,31 @@
             details.style.display = 'block';
             summary.classList.add('expanded');
         }
-    }
+    };
 
-    // 修改日期
-    function editDate(event, uid, logIndex, el) {
-        if (!isEditMode) return; // 非編輯模式不可修改
-        event.stopPropagation(); // 防止觸發 toggleDetails
-
-        if (el.querySelector('input')) return;
-
-        const originalDate = el.innerText;
-        const input = document.createElement('input');
-        input.type = 'date';
-        input.value = originalDate;
-        input.style.width = '100%';
-        
-        el.innerHTML = '';
-        el.appendChild(input);
-        input.focus();
-
-        const save = () => {
-            const newDate = input.value;
-            if (newDate && newDate !== originalDate) {
-                const user = db.find(u => u.id === uid);
-                if (user) {
-                    // Logs 已經 sort 過，這裡需要小心 index 對應問題
-                    // 簡單解法：直接在 render 時傳入的 index 是 sort 後的 index
-                    // 所以修改 user.logs 需要先 sort 一次確保順序一致，再修改
-                    user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    user.logs[logIndex].date = newDate;
-                    saveData();
-                    renderBackend();
-                    restoreExpand(uid);
-                }
-            } else {
-                el.innerHTML = originalDate;
-            }
-        };
-
-        input.onblur = save;
-        input.onkeypress = (e) => { if(e.key === 'Enter') input.blur(); };
-        input.onclick = (e) => e.stopPropagation();
-    }
-
-    // 修改內容
-    function editContent(event, uid, logIndex, el) {
-        if (!isEditMode) return;
-        event.stopPropagation();
-
-        if (el.querySelector('input')) return;
-
-        const originalText = el.innerText;
-        const input = document.createElement('input'); // 使用 input 比較整齊，若內容多可用 textarea
-        input.type = 'text';
-        input.value = originalText;
-        input.style.width = '100%';
-        input.style.padding = '4px';
-
-        el.innerHTML = '';
-        el.appendChild(input);
-        input.focus();
-
-        const save = () => {
-            const newText = input.value.trim();
-            if (newText && newText !== originalText) {
-                const user = db.find(u => u.id === uid);
-                if (user) {
-                    user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-                    user.logs[logIndex].content = newText;
-                    saveData();
-                    renderBackend();
-                    restoreExpand(uid);
-                }
-            } else {
-                el.innerHTML = originalText;
-            }
-        };
-
-        input.onblur = save;
-        input.onkeypress = (e) => { if(e.key === 'Enter') input.blur(); };
-        input.onclick = (e) => e.stopPropagation();
-    }
-
-    // 刪除單筆紀錄
-    function deleteSingleLog(event, uid, logIndex) {
-        event.stopPropagation();
-        const t = i18n[currentLang];
-        
-        if(confirm(t.alertDeleteLog)) {
-            const user = db.find(u => u.id === uid);
-            if(user) {
-                user.logs.sort((a, b) => new Date(b.date) - new Date(a.date));
-                user.logs.splice(logIndex, 1); // 刪除該筆
-                
-                // 如果刪到沒紀錄，是否要刪除人？ 目前邏輯保留人名
-                saveData();
-                renderBackend();
-                restoreExpand(uid);
-            }
-        }
-    }
-
-    // 輔助：重新渲染後保持展開狀態
     function restoreExpand(uid) {
         setTimeout(() => {
             const d = document.getElementById(`details-${uid}`);
-            if(d) {
-                d.style.display = 'block';
-                d.previousElementSibling.classList.add('expanded');
-            }
-        }, 50);
+            if(d) { d.style.display = 'block'; d.previousElementSibling.classList.add('expanded'); }
+        }, 100); // 雲端更新稍慢，延時稍長
     }
 
-    function updateCounter() {
-        const t = i18n[currentLang];
-        const count = db.length;
-        document.getElementById('txt-total-count').textContent = t.txtTotal + count + t.txtPerson;
-    }
-
-    function toggleSelectAll() {
-        const mainCheck = document.getElementById('selectAll');
-        const checks = document.getElementsByName('selectUser');
-        checks.forEach(c => c.checked = mainCheck.checked);
-    }
-
-    function deleteSelected() {
-        const t = i18n[currentLang];
-        const checks = document.getElementsByName('selectUser');
-        const toDelete = [];
-        checks.forEach(c => { if(c.checked) toDelete.push(c.value); });
-
-        if (toDelete.length === 0) return;
-
-        if (confirm(t.alertConfirmDelete)) {
-            db = db.filter(u => !toDelete.includes(u.id));
-            saveData();
-            renderBackend();
-            document.getElementById('selectAll').checked = false;
-            alert(t.alertDeleted);
-            
-            if (toDelete.includes(document.getElementById('idInput').value)) {
-                document.getElementById('idInput').value = '';
-                document.getElementById('nameInput').value = '';
-                updateReplyOption(null);
-            }
-        }
-    }
-
-    function switchPage(page) {
+    window.toggleSort = () => { sortDesc = !sortDesc; document.getElementById('sortIcon').textContent = sortDesc ? '▼' : '▲'; renderBackend(); };
+    window.toggleSelectAll = () => { const m = document.getElementById('selectAll'); document.getElementsByName('selectUser').forEach(c => c.checked = m.checked); };
+    window.switchPage = (page) => {
         document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
         document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-        
-        if (page === 'entry') {
-            document.getElementById('entrySection').classList.add('active-section');
-            document.getElementById('btn-entry').classList.add('active');
-        } else {
-            document.getElementById('backendSection').classList.add('active-section');
-            document.getElementById('btn-backend').classList.add('active');
-            renderBackend();
-        }
-    }
-
+        if (page === 'entry') { document.getElementById('entrySection').classList.add('active-section'); document.getElementById('btn-entry').classList.add('active'); }
+        else { document.getElementById('backendSection').classList.add('active-section'); document.getElementById('btn-backend').classList.add('active'); renderBackend(); }
+    };
+    function updateCounter() { document.getElementById('txt-total-count').textContent = i18n[currentLang].txtTotal + localDb.length + i18n[currentLang].txtPerson; }
+    
     function generateNewId() {
-        if (db.length === 0) return '0001';
-        const maxId = db.reduce((max, u) => Math.max(max, parseInt(u.id, 10)), 0);
+        if (localDb.length === 0) return '0001';
+        const maxId = localDb.reduce((max, u) => Math.max(max, parseInt(u.id, 10)), 0);
         return String(maxId + 1).padStart(4, '0');
     }
 
-    function saveData() {
-        localStorage.setItem('missionary_data_v4', JSON.stringify(db));
-    }
 </script>
-
 </body>
 </html>
