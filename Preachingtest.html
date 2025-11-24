@@ -75,10 +75,9 @@
             outline: none;
         }
 
-        /* --- 容器 (已調整寬度) --- */
+        /* --- 容器 --- */
         .container {
             width: 100%;
-            /* 修改：從 900px 增加到 1200px，讓電腦版視野更寬廣 */
             max-width: 1200px;
             margin: 20px auto;
             background: rgba(255, 255, 255, 0.98);
@@ -106,7 +105,6 @@
         
         label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--dark-green); font-size: 0.9rem; }
         
-        /* 修改：增加 max-width 防止手機版日期溢出 */
         input, select, textarea {
             width: 100%; 
             max-width: 100%; 
@@ -139,8 +137,13 @@
             min-height: 50px;
         }
         
-        .toolbar-left { display: flex; align-items: center; gap: 15px; font-size: 0.95rem; font-weight: bold; color: #555; }
+        .toolbar-left { display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: bold; color: #555; flex-wrap: wrap; }
         
+        /* 統計數字樣式 */
+        .stat-item { display: flex; align-items: center; white-space: nowrap; }
+        .stat-divider { margin: 0 8px; color: #ccc; }
+        .highlight-stat { color: #2e7d32; }
+
         .edit-controls { display: none; align-items: center; gap: 10px; }
         .show-edit .edit-controls { display: flex; } 
         
@@ -210,12 +213,7 @@
 
         /* RWD 響應式調整 */
         @media (max-width: 700px) {
-            /* 修改：調整寬度比例與內距，避免手機版太擠或超出 */
-            .container { 
-                padding: 20px 15px; 
-                margin: 10px auto; 
-                width: 95%; 
-            }
+            .container { padding: 20px 15px; margin: 10px auto; width: 95%; }
             .form-grid { grid-template-columns: 1fr; }
             .nav-title span { display: none; }
             .list-header-row { display: none; } 
@@ -224,7 +222,6 @@
                 display: flex; flex-direction: column; align-items: flex-start; gap: 5px; position: relative;
                 padding-left: 15px;
             }
-            /* 編輯模式下的內距調整，確保不被 checkbox 擋住 */
             .list-container.edit-mode .grid-row { padding-left: 45px; } 
             
             .check-cell { position: absolute; left: 10px; top: 15px; width: auto; opacity: 0; pointer-events: none;}
@@ -243,7 +240,7 @@
 <nav>
     <div class="nav-left">
         <div class="nav-title">
-        <div class="nav-title">🌱           
+        <div class="nav-title">🌱          
         <span id="txt-app-title">전도 관리 시스템</span>
         </div>
         <div class="menu-items">
@@ -298,9 +295,13 @@
         
         <div class="backend-toolbar">
             <div class="toolbar-left">
-                <span id="txt-total-count">섭외자: 0명</span>
+                <span class="stat-item" id="txt-total-count">섭외자: 0명</span>
+                
+                <span class="stat-divider">|</span>
+                <span class="stat-item highlight-stat" id="txt-interaction-count">실제 교류 (대화): 0명</span>
+
                 <div class="edit-controls" id="editControls">
-                    <span style="color:#aaa;">|</span>
+                    <span class="stat-divider">|</span>
                     <label style="display:flex; align-items:center; cursor:pointer;">
                         <input type="checkbox" id="selectAll" onclick="window.toggleSelectAll()" style="width:18px; height:18px; margin-right:5px;">
                         <span id="txt-select-all">전체 선택</span>
@@ -334,7 +335,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    // 【重要】請將下方的大括號內容替換為您從 Firebase Console 取得的 Config
+    // 【重要】請確認您的 Firebase Config (此處已預填您的設定)
     // ------------------------------------------------------------------
     const firebaseConfig = {
         apiKey: "AIzaSyBXnq1RzY0zxGE0trwLPR-PHtdfFCvRw0A",
@@ -379,6 +380,7 @@
             phId: "예: 9999", phName: "예: 김철수", phContent: "대화 내용이나 기도 제목 입력...",
             btnSubmit: "등록하기", headerBackend: "데이터 관리",
             txtSelectAll: "전체 선택", txtTotal: "섭외자: ", txtPerson: "명",
+            txtInteraction: "실제 교류 (대화): ", // 新增翻譯
             btnDelete: "선택 삭제", btnEdit: "편집", btnDone: "완료",
             colId: "번호", colName: "이름", colDate: "최근 날짜", colContent: "최신 내용",
             statusFound: "✔ 기존 데이터 발견: ", statusNew: "✚ 새로운 번호/이름입니다.",
@@ -398,6 +400,7 @@
             phId: "例: 9999", phName: "例: 金大中", phContent: "請輸入對話重點或備忘...",
             btnSubmit: "登錄資料", headerBackend: "後台登錄資料",
             txtSelectAll: "全選", txtTotal: "涉外者人數: ", txtPerson: " 人",
+            txtInteraction: "實際交流 (有對話): ", // 新增翻譯
             btnDelete: "刪除選取", btnEdit: "編輯", btnDone: "完成",
             colId: "編號", colName: "姓名", colDate: "最近日期", colContent: "最新內容",
             statusFound: "✔ 已找到舊資料：", statusNew: "✚ 這是新的編號，請輸入姓名",
@@ -764,7 +767,23 @@
         if (page === 'entry') { document.getElementById('entrySection').classList.add('active-section'); document.getElementById('btn-entry').classList.add('active'); }
         else { document.getElementById('backendSection').classList.add('active-section'); document.getElementById('btn-backend').classList.add('active'); renderBackend(); }
     };
-    function updateCounter() { document.getElementById('txt-total-count').textContent = i18n[currentLang].txtTotal + localDb.length + i18n[currentLang].txtPerson; }
+    
+    // 統計邏輯更新
+    function updateCounter() {
+        const t = i18n[currentLang];
+        // 總人數
+        document.getElementById('txt-total-count').textContent = t.txtTotal + localDb.length + t.txtPerson;
+        
+        // 實際交流人數計算
+        // 條件：至少有一個 'me' 且至少有一個 'other'
+        const interactionCount = localDb.filter(user => {
+            const hasMe = user.logs.some(log => log.type === 'me');
+            const hasOther = user.logs.some(log => log.type === 'other');
+            return hasMe && hasOther;
+        }).length;
+        
+        document.getElementById('txt-interaction-count').textContent = t.txtInteraction + interactionCount + t.txtPerson;
+    }
     
     function generateNewId() {
         if (localDb.length === 0) return '0001';
