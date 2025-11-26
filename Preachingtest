@@ -19,7 +19,14 @@
         * { box-sizing: border-box; }
 
         body {
-            font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", sans-serif;
+            /* 修改點：新增 Emoji 字體支援 
+               "Apple Color Emoji" -> iOS/macOS
+               "Segoe UI Emoji", "Segoe UI Symbol" -> Windows
+               "Noto Color Emoji" -> Android/Linux
+            */
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", "Segoe UI", 
+                         "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji", 
+                         sans-serif;
             background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
             margin: 0;
             padding: 0;
@@ -103,7 +110,7 @@
         /* --- 表單 --- */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-full-width { grid-column: 1 / -1; }
-        .form-group { margin-bottom: 5px; min-width: 0; /* 防止 grid item 撐開 */ }
+        .form-group { margin-bottom: 5px; min-width: 0; }
         
         label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--dark-green); font-size: 0.9rem; }
         
@@ -115,9 +122,10 @@
             border-radius: 6px; 
             font-size: 15px; 
             outline: none;
-            /* 修正手機版超出問題的重要屬性 */
             box-sizing: border-box; 
             min-width: 0;
+            /* 確保輸入框內也能正確顯示 Emoji */
+            font-family: inherit;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15); }
         
@@ -200,10 +208,10 @@
         .action-cell { overflow: hidden; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .list-container.edit-mode .action-cell { opacity: 1; }
 
-        /* --- 修正: 內容換行顯示 --- */
+        /* 內容換行顯示設定 */
         .col-content, .detail-row .editable {
-            white-space: pre-wrap; /* 保留換行符號 */
-            word-break: break-word; /* 防止長單字破版 */
+            white-space: pre-wrap; 
+            word-break: break-word; 
         }
 
         .editable { cursor: default; }
@@ -228,7 +236,6 @@
             .nav-title span { display: none; }
             .list-header-row { display: none; } 
             
-            /* 強制修正手機版輸入框寬度 */
             input, select, textarea {
                 width: 100% !important;
                 max-width: 100% !important;
@@ -247,7 +254,7 @@
             .list-container.edit-mode .action-cell { opacity: 1; pointer-events: auto; }
             
             .col-date { font-size: 0.85rem; color: #666; }
-            .col-content { width: 100%; white-space: pre-wrap; /* 手機版也要保留換行 */ }
+            .col-content { width: 100%; white-space: pre-wrap; }
         }
     </style>
 </head>
@@ -579,7 +586,7 @@
         let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
         const userRef = doc(dbInstance, "missionary_data", id);
         
-        // 修正 2: 加入 timestamp (createdAt) 以便排序
+        // 使用時間戳記 (timestamp) 來進行秒數排序
         const timestamp = new Date().getTime();
         const newLogEntry = { date, type: typeLabel, content, createdAt: timestamp };
 
@@ -625,7 +632,6 @@
         if(confirm(t.alertDeleteLog)) {
             const user = localDb.find(u => u.id === uid);
             if(user) {
-                // 修正排序邏輯
                 const sortedLogs = [...user.logs].sort((a, b) => {
                     const timeA = a.createdAt || new Date(a.date).getTime();
                     const timeB = b.createdAt || new Date(b.date).getTime();
@@ -655,7 +661,6 @@
             const newDate = input.value;
             if (newDate && newDate !== originalDate) {
                 const user = localDb.find(u => u.id === uid);
-                // 修正排序邏輯取得正確的 log
                 const sortedLogs = [...user.logs].sort((a, b) => {
                     const timeA = a.createdAt || new Date(a.date).getTime();
                     const timeB = b.createdAt || new Date(b.date).getTime();
@@ -674,7 +679,7 @@
     window.editContent = (event, uid, logIndex, el) => {
         if (!isEditMode) return;
         event.stopPropagation();
-        if (el.querySelector('textarea')) return; // 改用 textarea 編輯更方便
+        if (el.querySelector('textarea')) return;
 
         const originalText = el.innerText;
         const input = document.createElement('textarea');
@@ -685,7 +690,6 @@
             const newText = input.value.trim();
             if (newText && newText !== originalText) {
                 const user = localDb.find(u => u.id === uid);
-                // 修正排序邏輯取得正確的 log
                 const sortedLogs = [...user.logs].sort((a, b) => {
                     const timeA = a.createdAt || new Date(a.date).getTime();
                     const timeB = b.createdAt || new Date(b.date).getTime();
@@ -708,7 +712,7 @@
         listContainer.innerHTML = '';
 
         const processedUsers = localDb.map(user => {
-            // 修正 2: 排序邏輯加入 createdAt (秒級排序)
+            // 排序邏輯：優先使用 createdAt (秒級)，否則使用日期
             const sortedLogs = [...user.logs].sort((a, b) => {
                 const timeA = a.createdAt || new Date(a.date).getTime();
                 const timeB = b.createdAt || new Date(b.date).getTime();
@@ -718,7 +722,6 @@
             return { ...user, logs: sortedLogs, lastLog };
         });
 
-        // 修正 2: 人員列表排序邏輯加入 createdAt
         processedUsers.sort((a, b) => {
             const timeA = a.lastLog.createdAt || new Date(a.lastLog.date).getTime();
             const timeB = b.lastLog.createdAt || new Date(b.lastLog.date).getTime();
@@ -730,7 +733,6 @@
             card.className = 'user-card';
             const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
 
-            // 修正 3: .col-content 已在 CSS 加入 white-space: pre-wrap
             const summaryHtml = `
                 <div class="user-summary grid-row" onclick="window.toggleDetails('${user.id}')">
                     <div class="check-cell" onclick="event.stopPropagation()">
