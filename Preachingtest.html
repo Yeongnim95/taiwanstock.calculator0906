@@ -103,7 +103,7 @@
         /* --- 表單 --- */
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .form-full-width { grid-column: 1 / -1; }
-        .form-group { margin-bottom: 5px; }
+        .form-group { margin-bottom: 5px; min-width: 0; /* 防止 grid item 撐開 */ }
         
         label { display: block; margin-bottom: 6px; font-weight: bold; color: var(--dark-green); font-size: 0.9rem; }
         
@@ -115,6 +115,9 @@
             border-radius: 6px; 
             font-size: 15px; 
             outline: none;
+            /* 修正手機版超出問題的重要屬性 */
+            box-sizing: border-box; 
+            min-width: 0;
         }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15); }
         
@@ -197,6 +200,12 @@
         .action-cell { overflow: hidden; display: flex; justify-content: center; opacity: 0; transition: opacity 0.3s; }
         .list-container.edit-mode .action-cell { opacity: 1; }
 
+        /* --- 修正: 內容換行顯示 --- */
+        .col-content, .detail-row .editable {
+            white-space: pre-wrap; /* 保留換行符號 */
+            word-break: break-word; /* 防止長單字破版 */
+        }
+
         .editable { cursor: default; }
         .list-container.edit-mode .editable { 
             cursor: pointer; border: 1px dashed #ccc; border-radius: 4px; padding: 2px 4px; background: #fff;
@@ -219,6 +228,12 @@
             .nav-title span { display: none; }
             .list-header-row { display: none; } 
             
+            /* 強制修正手機版輸入框寬度 */
+            input, select, textarea {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
             .grid-row, .list-container.edit-mode .grid-row {
                 display: flex; flex-direction: column; align-items: flex-start; gap: 5px; position: relative;
                 padding-left: 15px;
@@ -232,7 +247,7 @@
             .list-container.edit-mode .action-cell { opacity: 1; pointer-events: auto; }
             
             .col-date { font-size: 0.85rem; color: #666; }
-            .col-content { width: 100%; white-space: normal; }
+            .col-content { width: 100%; white-space: pre-wrap; /* 手機版也要保留換行 */ }
         }
     </style>
 </head>
@@ -471,13 +486,12 @@
         updateCounter();
     }
 
-    // --- 修正: 自動清除與嚴格檢查邏輯 ---
+    // --- 邏輯修正區塊 ---
 
     window.handleIdInput = () => {
         const t = i18n[currentLang];
         const idVal = document.getElementById('idInput').value.trim();
         
-        // 修正 1: 若清空編號，名字也自動清空
         if (!idVal) {
             document.getElementById('nameInput').value = '';
             document.getElementById('statusMsg').style.display = 'none';
@@ -501,7 +515,6 @@
         const t = i18n[currentLang];
         const nameVal = document.getElementById('nameInput').value.trim();
         
-        // 修正 1: 若清空名字，編號也自動清空
         if (!nameVal) {
             document.getElementById('idInput').value = '';
             document.getElementById('statusMsg').style.display = 'none';
@@ -551,7 +564,6 @@
 
         if (!id || !name || !date || !content) { alert(t.alertIncomplete); return; }
 
-        // 修正 2: 嚴格檢查 ID 與 Name 的配對
         const existingUserById = localDb.find(u => u.id === id);
         if (existingUserById && existingUserById.name !== name) {
             alert(t.errIdConflict + `\n(ID: ${id} -> ${existingUserById.name})`);
@@ -566,16 +578,19 @@
 
         let typeLabel = (typeSelect === 'me') ? 'me' : 'other';
         const userRef = doc(dbInstance, "missionary_data", id);
+        
+        // 修正 2: 加入 timestamp (createdAt) 以便排序
+        const timestamp = new Date().getTime();
+        const newLogEntry = { date, type: typeLabel, content, createdAt: timestamp };
 
-        // 檢查是否已存在 (前面已通過配對檢查，這裡是安全的)
         let updatedLogs = [];
         
         if (existingUserById) {
-            updatedLogs = [...existingUserById.logs, { date, type: typeLabel, content }];
+            updatedLogs = [...existingUserById.logs, newLogEntry];
             await setDoc(userRef, { id, name, logs: updatedLogs }, { merge: true });
             alert(t.alertUpdate + name);
         } else {
-            updatedLogs = [{ date, type: typeLabel, content }];
+            updatedLogs = [newLogEntry];
             await setDoc(userRef, { id, name, logs: updatedLogs });
             alert(t.alertCreate + name);
         }
@@ -610,7 +625,12 @@
         if(confirm(t.alertDeleteLog)) {
             const user = localDb.find(u => u.id === uid);
             if(user) {
-                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // 修正排序邏輯
+                const sortedLogs = [...user.logs].sort((a, b) => {
+                    const timeA = a.createdAt || new Date(a.date).getTime();
+                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    return timeB - timeA;
+                });
                 sortedLogs.splice(logIndex, 1);
                 
                 await updateDoc(doc(dbInstance, "missionary_data", uid), {
@@ -635,7 +655,12 @@
             const newDate = input.value;
             if (newDate && newDate !== originalDate) {
                 const user = localDb.find(u => u.id === uid);
-                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // 修正排序邏輯取得正確的 log
+                const sortedLogs = [...user.logs].sort((a, b) => {
+                    const timeA = a.createdAt || new Date(a.date).getTime();
+                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    return timeB - timeA;
+                });
                 sortedLogs[logIndex].date = newDate;
                 await updateDoc(doc(dbInstance, "missionary_data", uid), { logs: sortedLogs });
                 restoreExpand(uid);
@@ -649,23 +674,28 @@
     window.editContent = (event, uid, logIndex, el) => {
         if (!isEditMode) return;
         event.stopPropagation();
-        if (el.querySelector('input')) return;
+        if (el.querySelector('textarea')) return; // 改用 textarea 編輯更方便
 
         const originalText = el.innerText;
-        const input = document.createElement('input');
-        input.type = 'text'; input.value = originalText; input.style.width = '100%'; input.style.padding='4px';
+        const input = document.createElement('textarea');
+        input.value = originalText; input.style.width = '100%'; input.style.padding='4px'; input.rows = 3;
         el.innerHTML = ''; el.appendChild(input); input.focus();
 
         input.onblur = async () => {
             const newText = input.value.trim();
             if (newText && newText !== originalText) {
                 const user = localDb.find(u => u.id === uid);
-                const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
+                // 修正排序邏輯取得正確的 log
+                const sortedLogs = [...user.logs].sort((a, b) => {
+                    const timeA = a.createdAt || new Date(a.date).getTime();
+                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    return timeB - timeA;
+                });
                 sortedLogs[logIndex].content = newText;
                 await updateDoc(doc(dbInstance, "missionary_data", uid), { logs: sortedLogs });
                 restoreExpand(uid);
             } else {
-                el.innerHTML = originalText;
+                el.innerText = originalText;
             }
         };
         input.onclick = (e) => e.stopPropagation();
@@ -678,15 +708,21 @@
         listContainer.innerHTML = '';
 
         const processedUsers = localDb.map(user => {
-            const sortedLogs = [...user.logs].sort((a, b) => new Date(b.date) - new Date(a.date));
-            const lastLog = sortedLogs[0] || { date: '0000-00-00', content: t.msgEmpty };
+            // 修正 2: 排序邏輯加入 createdAt (秒級排序)
+            const sortedLogs = [...user.logs].sort((a, b) => {
+                const timeA = a.createdAt || new Date(a.date).getTime();
+                const timeB = b.createdAt || new Date(b.date).getTime();
+                return timeB - timeA;
+            });
+            const lastLog = sortedLogs[0] || { date: '0000-00-00', content: t.msgEmpty, createdAt: 0 };
             return { ...user, logs: sortedLogs, lastLog };
         });
 
+        // 修正 2: 人員列表排序邏輯加入 createdAt
         processedUsers.sort((a, b) => {
-            const dA = new Date(a.lastLog.date);
-            const dB = new Date(b.lastLog.date);
-            return sortDesc ? (dB - dA) : (dA - dB);
+            const timeA = a.lastLog.createdAt || new Date(a.lastLog.date).getTime();
+            const timeB = b.lastLog.createdAt || new Date(b.lastLog.date).getTime();
+            return sortDesc ? (timeB - timeA) : (timeA - timeB);
         });
 
         processedUsers.forEach(user => {
@@ -694,6 +730,7 @@
             card.className = 'user-card';
             const displayDate = user.lastLog.date === '0000-00-00' ? '-' : user.lastLog.date;
 
+            // 修正 3: .col-content 已在 CSS 加入 white-space: pre-wrap
             const summaryHtml = `
                 <div class="user-summary grid-row" onclick="window.toggleDetails('${user.id}')">
                     <div class="check-cell" onclick="event.stopPropagation()">
@@ -757,7 +794,7 @@
     };
 
     window.toggleDetails = (uid) => {
-        if (document.activeElement.tagName === 'INPUT') return;
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
         const details = document.getElementById(`details-${uid}`);
         const summary = details.previousElementSibling;
         if (details.style.display === 'block') {
