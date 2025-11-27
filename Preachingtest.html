@@ -127,6 +127,14 @@
             /* 確保輸入框內也能正確顯示 Emoji */
             font-family: inherit;
         }
+        
+        /* 日期輸入框特別處理 - 防止超出容器 */
+        input[type="date"] {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            min-height: 44px;
+        }
         input:focus, select:focus, textarea:focus { border-color: var(--primary-green); box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15); }
         
         .status-bar {
@@ -239,6 +247,15 @@
             input, select, textarea {
                 width: 100% !important;
                 max-width: 100% !important;
+            }
+            
+            /* 修正日期輸入框超出邊界問題 */
+            input[type="date"] {
+                width: 100% !important;
+                max-width: 100% !important;
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
             }
 
             .grid-row, .list-container.edit-mode .grid-row {
