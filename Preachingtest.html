@@ -650,8 +650,11 @@
             const user = localDb.find(u => u.id === uid);
             if(user) {
                 const sortedLogs = [...user.logs].sort((a, b) => {
-                    const timeA = a.createdAt || new Date(a.date).getTime();
-                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    const dateA = a.date || '0000-00-00';
+                    const dateB = b.date || '0000-00-00';
+                    if (dateA !== dateB) return dateB.localeCompare(dateA);
+                    const timeA = a.createdAt || 0;
+                    const timeB = b.createdAt || 0;
                     return timeB - timeA;
                 });
                 sortedLogs.splice(logIndex, 1);
@@ -679,8 +682,11 @@
             if (newDate && newDate !== originalDate) {
                 const user = localDb.find(u => u.id === uid);
                 const sortedLogs = [...user.logs].sort((a, b) => {
-                    const timeA = a.createdAt || new Date(a.date).getTime();
-                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    const dateA = a.date || '0000-00-00';
+                    const dateB = b.date || '0000-00-00';
+                    if (dateA !== dateB) return dateB.localeCompare(dateA);
+                    const timeA = a.createdAt || 0;
+                    const timeB = b.createdAt || 0;
                     return timeB - timeA;
                 });
                 sortedLogs[logIndex].date = newDate;
@@ -708,8 +714,11 @@
             if (newText && newText !== originalText) {
                 const user = localDb.find(u => u.id === uid);
                 const sortedLogs = [...user.logs].sort((a, b) => {
-                    const timeA = a.createdAt || new Date(a.date).getTime();
-                    const timeB = b.createdAt || new Date(b.date).getTime();
+                    const dateA = a.date || '0000-00-00';
+                    const dateB = b.date || '0000-00-00';
+                    if (dateA !== dateB) return dateB.localeCompare(dateA);
+                    const timeA = a.createdAt || 0;
+                    const timeB = b.createdAt || 0;
                     return timeB - timeA;
                 });
                 sortedLogs[logIndex].content = newText;
@@ -728,21 +737,42 @@
         const listContainer = document.getElementById('dataList');
         listContainer.innerHTML = '';
 
+        // 排序輔助函數：主要以選擇的日期排序，同一天則以 createdAt (秒級) 排序
+        const sortByDateThenTime = (a, b) => {
+            const dateA = a.date || '0000-00-00';
+            const dateB = b.date || '0000-00-00';
+            // 比較日期 (日期晚的靠前)
+            if (dateA !== dateB) {
+                return dateB.localeCompare(dateA);
+            }
+            // 同一天則比較 createdAt (時間晚的靠前)
+            const timeA = a.createdAt || 0;
+            const timeB = b.createdAt || 0;
+            return timeB - timeA;
+        };
+
         const processedUsers = localDb.map(user => {
-            // 排序邏輯：優先使用 createdAt (秒級)，否則使用日期
-            const sortedLogs = [...user.logs].sort((a, b) => {
-                const timeA = a.createdAt || new Date(a.date).getTime();
-                const timeB = b.createdAt || new Date(b.date).getTime();
-                return timeB - timeA;
-            });
+            // 排序邏輯：主要以選擇的日期排序，同一天則以 createdAt 排序
+            const sortedLogs = [...user.logs].sort(sortByDateThenTime);
             const lastLog = sortedLogs[0] || { date: '0000-00-00', content: t.msgEmpty, createdAt: 0 };
             return { ...user, logs: sortedLogs, lastLog };
         });
 
         processedUsers.sort((a, b) => {
-            const timeA = a.lastLog.createdAt || new Date(a.lastLog.date).getTime();
-            const timeB = b.lastLog.createdAt || new Date(b.lastLog.date).getTime();
-            return sortDesc ? (timeB - timeA) : (timeA - timeB);
+            const dateA = a.lastLog.date || '0000-00-00';
+            const dateB = b.lastLog.date || '0000-00-00';
+            const timeA = a.lastLog.createdAt || 0;
+            const timeB = b.lastLog.createdAt || 0;
+            
+            if (sortDesc) {
+                // 降序：日期晚的靠前，同一天時間晚的靠前
+                if (dateA !== dateB) return dateB.localeCompare(dateA);
+                return timeB - timeA;
+            } else {
+                // 升序：日期早的靠前，同一天時間早的靠前
+                if (dateA !== dateB) return dateA.localeCompare(dateB);
+                return timeA - timeB;
+            }
         });
 
         processedUsers.forEach(user => {
