@@ -409,6 +409,23 @@
     let sortDesc = true; 
     let isEditMode = false;
 
+    // --- 每天0點自動重新整理功能 ---
+    function setupMidnightRefresh() {
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        
+        const msUntilMidnight = tomorrow.getTime() - now.getTime();
+        
+        setTimeout(() => {
+            location.reload();
+        }, msUntilMidnight);
+        
+        console.log(`Auto-refresh scheduled in ${Math.round(msUntilMidnight / 1000 / 60)} minutes (at midnight).`);
+    }
+    setupMidnightRefresh();
+
     const i18n = {
         ko: {
             appTitle: "전도 관리 시스템", btnEntry: "등록", btnBackend: "데이터",
